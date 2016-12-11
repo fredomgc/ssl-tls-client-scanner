@@ -2,6 +2,7 @@ package cz.ondrejsmetak;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.HttpRequest;
@@ -34,6 +35,8 @@ public class ProxyServer {
 		@Override
 		public HttpFilters filterRequest(HttpRequest originalRequest, ChannelHandlerContext ctx) {
 
+			
+			
 			/**
 			 * Toto je ten hook na hexDump
 			 */
@@ -58,6 +61,11 @@ public class ProxyServer {
 						System.err.println("Sláva to je client hello s velikosti " + bytes.length);
 						System.out.println(">>> " + ByteBufUtil.hexDump(buf));
 					}
+					
+					
+					Channel ch = ctx.channel(); 
+					String peerHost = ((java.net.InetSocketAddress)ch.remoteAddress()).getAddress().getHostAddress();
+					System.err.println("Hej zdroj je: " + peerHost);
 					
 					super.channelRead(ctx, msg);
 				}
