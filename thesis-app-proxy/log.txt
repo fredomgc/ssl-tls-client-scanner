@@ -1,7 +1,7 @@
-2016-12-09 08:57:29,169 INFO  [main] impl.DefaultHttpProxyServer (DefaultHttpProxyServer.java:459).start() - Starting proxy at address: /127.0.0.1:6880
-2016-12-09 08:57:29,190 INFO  [main] impl.DefaultHttpProxyServer (DefaultHttpProxyServer.java:488).doStart() - Proxy listening with TCP transport
-2016-12-09 08:57:29,256 INFO  [main] impl.DefaultHttpProxyServer (DefaultHttpProxyServer.java:523).doStart() - Proxy started at address: /127.0.0.1:6880
-2016-12-09 08:57:34,752 INFO  [LittleProxy-JVM-shutdown-hook] impl.DefaultHttpProxyServer (DefaultHttpProxyServer.java:400).doStop() - Shutting down proxy server immediately (non-graceful)
-2016-12-09 08:57:34,753 INFO  [LittleProxy-JVM-shutdown-hook] impl.DefaultHttpProxyServer (DefaultHttpProxyServer.java:433).closeAllChannels() - Closing all channels (non-graceful)
-2016-12-09 08:57:34,765 INFO  [LittleProxy-JVM-shutdown-hook] impl.ServerGroup (ServerGroup.java:212).shutdown() - Shutting down server group event loops (non-graceful)
-2016-12-09 08:57:34,820 INFO  [LittleProxy-JVM-shutdown-hook] impl.DefaultHttpProxyServer (DefaultHttpProxyServer.java:414).doStop() - Done shutting down proxy server
+2016-12-11 13:31:36,066 INFO  [main] impl.DefaultHttpProxyServer (DefaultHttpProxyServer.java:459).start() - Starting proxy at address: /127.0.0.1:6880
+2016-12-11 13:31:36,095 INFO  [main] impl.DefaultHttpProxyServer (DefaultHttpProxyServer.java:488).doStart() - Proxy listening with TCP transport
+2016-12-11 13:31:36,165 INFO  [main] impl.DefaultHttpProxyServer (DefaultHttpProxyServer.java:523).doStart() - Proxy started at address: /127.0.0.1:6880
+2016-12-11 13:32:23,978 INFO  [LittleProxy-JVM-shutdown-hook] impl.DefaultHttpProxyServer (DefaultHttpProxyServer.java:400).doStop() - Shutting down proxy server immediately (non-graceful)
+2016-12-11 13:32:23,979 INFO  [LittleProxy-JVM-shutdown-hook] impl.DefaultHttpProxyServer (DefaultHttpProxyServer.java:433).closeAllChannels() - Closing all channels (non-graceful)
+2016-12-11 13:32:24,000 INFO  [LittleProxy-JVM-shutdown-hook] impl.ServerGroup (ServerGroup.java:212).shutdown() - Shutting down server group event loops (non-graceful)
+2016-12-11 13:32:24,010 INFO  [LittleProxy-JVM-shutdown-hook] impl.DefaultHttpProxyServer (DefaultHttpProxyServer.java:414).doStop() - Done shutting down proxy server
