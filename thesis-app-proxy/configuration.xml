@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<!--
+	<directive name="debug" value="true" />
+	-->
+	
+	<cipherSuites>
+		<cipherSuite hexValue="c02b" name="TLS_ECDHE_WITH_AES_128_GCM_SHA256" mode="mustBe" />
+		<cipherSuite hexValue="000a" name="TLS_RSA_WITH_3DES_EDE_CBC_SHA" mode="mustNotBe" />
+	</cipherSuites>
+</configuration>

@@ -77,6 +77,14 @@ public class Hex {
 		return Helper.decToHex(getLengthInDec());
 	}
 
+	/**
+	 * How many digits has this hexadecimal value
+	 * @return 
+	 */
+	public int getDigits(){
+		return this.data.length();
+	}
+	
 	private String createToString(String data, int paddingToLength) {
 		return String.format("%1$" + paddingToLength + "s", data).replace(' ', '0');
 	}
