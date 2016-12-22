@@ -14,6 +14,9 @@ public class CipherSuiteRegister {
 	private static CipherSuiteRegister instance = null;
 	private final HashMap<Hex, CipherSuite> register = new HashMap<>();
 
+	public static final Hex TLS_FALLBACK_SCSV_HEX = new Hex("0x5600");
+	public static final String TLS_FALLBACK_SCSV_NAME = "TLS_FALLBACK_SCSV";
+
 	protected CipherSuiteRegister() {
 		//no direct instantiation.
 	}
@@ -47,7 +50,7 @@ public class CipherSuiteRegister {
 		if (found instanceof CipherSuite) {
 			return found; //cipher suite found
 		}
-		
+
 		//no such cipher suite found, so create it
 		CipherSuite unknown = new CipherSuite(hex, "Unknown", new Mode(Mode.Type.MUST_NOT_BE));
 		addCipherSuite(unknown);

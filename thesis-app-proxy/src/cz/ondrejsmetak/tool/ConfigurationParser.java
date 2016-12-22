@@ -1,6 +1,7 @@
 package cz.ondrejsmetak.tool;
 
 import cz.ondrejsmetak.CipherSuiteRegister;
+import cz.ondrejsmetak.ConfigurationRegister;
 import cz.ondrejsmetak.ResourceManager;
 import cz.ondrejsmetak.entity.CipherSuite;
 import cz.ondrejsmetak.entity.Mode;
@@ -22,7 +23,7 @@ import org.xml.sax.SAXException;
 
 /**
  * Storage for configuration directives
- * 
+ *
  * @author Ondřej Směták <posta@ondrejsmetak.cz>
  */
 public class ConfigurationParser extends BaseParser {
@@ -30,11 +31,16 @@ public class ConfigurationParser extends BaseParser {
 	public static final String FILE = "configuration.xml";
 
 	private static final String TAG_CONFIGURATION = "configuration";
+	private static final String TAG_DIRECTIVE = "directive";
+	private static final String TAG_PROTOCOLS = "protocols";
+	private static final String TAG_PROTOCOL = "protocol";
+	private static final String TAG_TLS_FALLBACK_SCSV = "tlsFallbackScsv";
 	private static final String TAG_CIPHER_SUITES = "cipherSuites";
 	private static final String TAG_CIPHER_SUITE = "cipherSuite";
 
 	private static final String ATTRIBUTE_HEX_VALUE = "hexValue";
 	private static final String ATTRIBUTE_NAME = "name";
+	private static final String ATTRIBUTE_VALUE = "value";
 	private static final String ATTRIBUTE_MODE = "mode";
 
 	@Override
@@ -65,10 +71,31 @@ public class ConfigurationParser extends BaseParser {
 		}
 
 		/**
-		 * Tag "cipherSuite" must have "name" and "hexValue" atribute
+		 * Tag "directive" must have "name" and "value" atribute
+		 */
+		if (node.getNodeName().equals(TAG_DIRECTIVE)) {
+			checkAttributesOfNode(node, ATTRIBUTE_NAME, ATTRIBUTE_VALUE);
+		}
+
+		/**
+		 * Tag "protocol" must have "name" and "mode" atribute
+		 */
+		if (node.getNodeName().equals(TAG_DIRECTIVE)) {
+			checkAttributesOfNode(node, ATTRIBUTE_NAME, ATTRIBUTE_VALUE);
+		}
+
+		/**
+		 * Tag "tlsFallbackScsv" must have "mode" atribute
 		 */
 		if (node.getNodeName().equals(TAG_CIPHER_SUITE)) {
 			checkAttributesOfNode(node, ATTRIBUTE_NAME, ATTRIBUTE_HEX_VALUE, ATTRIBUTE_MODE);
+		}
+
+		/**
+		 * Tag "cipherSuite" must have "hexValue", "name" and "mode" atribute
+		 */
+		if (node.getNodeName().equals(TAG_CIPHER_SUITE)) {
+			checkAttributesOfNode(node, ATTRIBUTE_HEX_VALUE, ATTRIBUTE_NAME, ATTRIBUTE_MODE);
 		}
 	}
 
@@ -101,6 +128,71 @@ public class ConfigurationParser extends BaseParser {
 
 		} catch (ParserConfigurationException | SAXException | IllegalArgumentException | IOException ex) {
 			throw new XmlParserException(ex);
+		}
+	}
+
+	private void parseDirective(Element node) throws XmlParserException {
+		if (node.getTagName().equals(TAG_DIRECTIVE)) {
+			NodeList directives = node.getElementsByTagName(TAG_DIRECTIVE);
+
+			for (int i = 0; i < directives.getLength(); i++) {
+				parseDirective(directives.item(i));
+			}
+		}
+	}
+
+	private void parseDirective(Node node) throws XmlParserException {
+		if (!(node instanceof Element)) {
+			return;
+		}
+
+		Element element = (Element) node;
+		String name = element.getAttribute(ATTRIBUTE_HEX_VALUE);
+		String value = element.getAttribute(ATTRIBUTE_VALUE);
+		setDirective(name, value);
+
+	}
+
+	/**
+	 * Sets given value to given directive
+	 *
+	 * @param name name of configuration directive
+	 * @param value value of configuration directive
+	 * @throws XmlParserException in case of any error
+	 */
+	private void setDirective(String name, String value) throws XmlParserException {
+		setDebug(name, value);
+		setPort(name, value);
+	}
+
+	/**
+	 * Sets directive, that can turn on debug mode
+	 *
+	 * @param name name of directive
+	 * @param value value of directive
+	 * @throws XmlParserException if given value has unsupported format
+	 */
+	private void setDebug(String name, String value) throws XmlParserException {
+		if (name.equalsIgnoreCase(ConfigurationRegister.DEBUG)) {
+			if (!Helper.isBooleanStr(value)) {
+				throw new XmlParserException("Value for directive " + ConfigurationRegister.DEBUG + " must be [true] or [false]!");
+			}
+
+			ConfigurationRegister.getInstance().setDebug(Helper.parseBooleanStr(value));
+		}
+	}
+
+	private void setPort(String name, String value) throws XmlParserException {
+		if (name.equalsIgnoreCase(ConfigurationRegister.PORT)) {
+			if (!Helper.isInteger(value)) {
+				throw new XmlParserException("Value for directive " + ConfigurationRegister.PORT + " must be integer value!");
+			}
+			Integer port = Integer.parseInt(value);
+			if (!((port >= 1 && port <= 65535))) {
+				throw new XmlParserException("Value for directive " + ConfigurationRegister.PORT + " must be in range [1 - 65535]!");
+			}
+
+			ConfigurationRegister.getInstance().setPort(port);
 		}
 	}
 
@@ -139,6 +231,11 @@ public class ConfigurationParser extends BaseParser {
 		Mode mode = parseMode(element.getAttribute(ATTRIBUTE_MODE), TAG_CIPHER_SUITE);
 
 		CipherSuite cipherSuite = new CipherSuite(hexValue, name, mode);
+		if (cipherSuite.getHex().equals(CipherSuiteRegister.TLS_FALLBACK_SCSV_HEX)) {
+			throw new XmlParserException("Cipher suite TLS_FALLBACK_SCSV is supported by directive \"tlsFallbackScsv\". "
+					+ "Please, remove this cipher suite from \"cipherSuites\" section!", cipherSuite);
+		}
+
 		if (CipherSuiteRegister.getInstance().containsCipherSuite(cipherSuite)) {
 			throw new XmlParserException("Cipher suite [%s] is already present!", cipherSuite);
 		}

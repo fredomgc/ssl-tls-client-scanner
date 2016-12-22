@@ -9,6 +9,7 @@ import cz.ondrejsmetak.entity.Hex;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import javax.xml.bind.DatatypeConverter;
@@ -22,6 +23,41 @@ public class Helper {
 	
 	private static final Pattern isHex = Pattern.compile("^[0-9A-Fa-f]+$");
 
+	
+	/**
+	 * Is input boolean value in its text form?
+	 *
+	 * @param input
+	 * @return
+	 */
+	public static boolean isBooleanStr(String input) {
+		return input.equalsIgnoreCase("true") || input.equalsIgnoreCase("false");
+	}
+
+	public static boolean parseBooleanStr(String input) {
+		return input.equalsIgnoreCase("true");
+	}
+	
+	
+	/**
+	 * Checks, if string contains properly formatted integer value 
+	 * @param s
+	 * @param radix
+	 * @return 
+	 */
+	private static boolean isInteger(String s, int radix) {
+		Scanner sc = new Scanner(s.trim());
+		if (!sc.hasNextInt(radix)) {
+			return false;
+		}
+		sc.nextInt(radix);
+		return !sc.hasNext();
+	}
+	
+	public static boolean isInteger(String input) {
+		return isInteger(input, 10);
+	}
+	
 	public static String toHexString(byte[] array) {
 		return DatatypeConverter.printHexBinary(array);
 	}
