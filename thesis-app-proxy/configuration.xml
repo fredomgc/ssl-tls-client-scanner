@@ -6,7 +6,7 @@
 	</directives>
 	
 	<protocols>
-		<highestSupportedProtocol name="SSLv2"  mode="canBe" />
+		<highestSupportedProtocol name="TLS 1.0"  mode="mustNotBe" />
 	</protocols>
 	
 	<cipherSuites>

@@ -6,8 +6,13 @@
 package cz.ondrejsmetak.tool;
 
 import cz.ondrejsmetak.entity.Hex;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
@@ -20,13 +25,42 @@ import org.apache.commons.lang3.SystemUtils;
  * @author Ondřej Směták <posta@ondrejsmetak.cz>
  */
 public class Helper {
-	
+
 	private static final Pattern isHex = Pattern.compile("^[0-9A-Fa-f]+$");
 
-	
-	
-	
-	
+	/**
+	 * Returns path to current working directory
+	 *
+	 * @return path to current working directory
+	 */
+	public static String getWorkingDirectory() {
+		return System.getProperty("user.dir");
+	}
+
+	/**
+	 * Returns date formatted to human readable format
+	 *
+	 * @param date date, that will be formatted
+	 * @param dash use dash during formatting date or not
+	 * @return formatted date
+	 */
+	public static String getFormattedDateTime(Date date, boolean dash) {
+		DateFormat dateFormat = new SimpleDateFormat(dash ? "yyyy-MM-dd-HH-mm-ss" : "yyyy-MM-dd HH:mm:ss");
+		return dateFormat.format(date);
+	}
+
+	/**
+	 * Returns whole content of the given file
+	 *
+	 * @param file file, that will be read
+	 * @return content of file
+	 * @throws FileNotFoundException if case of error
+	 */
+	public static String getContentOfFile(File file) throws FileNotFoundException {
+		//http://stackoverflow.com/a/3403112
+		return new Scanner(file).useDelimiter("\\Z").next();
+	}
+
 	/**
 	 * Is input boolean value in its text form?
 	 *
@@ -40,13 +74,13 @@ public class Helper {
 	public static boolean parseBooleanStr(String input) {
 		return input.equalsIgnoreCase("true");
 	}
-	
-	
+
 	/**
-	 * Checks, if string contains properly formatted integer value 
+	 * Checks, if string contains properly formatted integer value
+	 *
 	 * @param s
 	 * @param radix
-	 * @return 
+	 * @return
 	 */
 	private static boolean isInteger(String s, int radix) {
 		Scanner sc = new Scanner(s.trim());
@@ -56,11 +90,11 @@ public class Helper {
 		sc.nextInt(radix);
 		return !sc.hasNext();
 	}
-	
+
 	public static boolean isInteger(String input) {
 		return isInteger(input, 10);
 	}
-	
+
 	public static String toHexString(byte[] array) {
 		return DatatypeConverter.printHexBinary(array);
 	}
@@ -120,11 +154,11 @@ public class Helper {
 	public static boolean isMacOsx() {
 		return SystemUtils.IS_OS_MAC_OSX;
 	}
-	
-	public static boolean isHex(String value){
+
+	public static boolean isHex(String value) {
 		return isHex.matcher(value).matches();
 	}
-	
+
 	/**
 	 * Je sudé?
 	 *
@@ -145,10 +179,7 @@ public class Helper {
 		return !isOdd(number);
 	}
 
-	
-	
-	
-		//Default enabled Cipher Suites
+	//Default enabled Cipher Suites
 //	public static final String[] CIPHERS_A = new String[]{
 //		"TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384",
 //		"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",

@@ -2,10 +2,12 @@ package cz.ondrejsmetak;
 
 import cz.ondrejsmetak.entity.ClientHello;
 import cz.ondrejsmetak.entity.ReportMessage;
+import cz.ondrejsmetak.export.HtmlExport;
 import cz.ondrejsmetak.other.XmlParserException;
 import cz.ondrejsmetak.parser.ConfigurationParser;
 import cz.ondrejsmetak.scanner.ClientHelloScanner;
 import cz.ondrejsmetak.tool.Helper;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,8 +36,18 @@ public class Application {
 			
 			ClientHelloScanner scanner = new ClientHelloScanner(clientHello);
 
-			for (ReportMessage rm : scanner.getReportMessages()) {
-				System.err.println(rm.getMessage());
+//			for (ReportMessage rm : scanner.getReportMessages()) {
+//				System.err.println(rm.getMessage());
+//			}
+			
+			System.err.println("Celkem zprav: " + scanner.getReportMessages().size());
+			
+			
+			HtmlExport export = new HtmlExport();
+			try {
+				export.export(scanner.getReportMessages());
+			} catch (IOException ex) {
+				Logger.getLogger(Application.class.getName()).log(Level.SEVERE, null, ex);
 			}
 			
 			

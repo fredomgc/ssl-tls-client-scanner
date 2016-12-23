@@ -3,6 +3,7 @@ package cz.ondrejsmetak;
 import cz.ondrejsmetak.entity.CipherSuite;
 import cz.ondrejsmetak.entity.Hex;
 import cz.ondrejsmetak.entity.Mode;
+import java.util.Collection;
 import java.util.HashMap;
 
 /**
@@ -17,6 +18,7 @@ public class CipherSuiteRegister {
 	public static final Hex TLS_FALLBACK_SCSV_HEX = new Hex("0x5600");
 	public static final String TLS_FALLBACK_SCSV_NAME = "TLS_FALLBACK_SCSV";
 
+	
 	protected CipherSuiteRegister() {
 		//no direct instantiation.
 	}
@@ -40,6 +42,10 @@ public class CipherSuiteRegister {
 		return register.size();
 	}
 
+	public Collection<CipherSuite> getCipherSuites(){
+		return register.values();
+	}
+	
 	public CipherSuite getByHexOrCreateDefault(Hex hex) {
 		if (hex.getDigits() != 4) {
 			throw new IllegalArgumentException("Hexadecimal key must have exactly 4 digits!");

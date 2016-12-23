@@ -33,7 +33,7 @@ public class ResourceManager {
 	 * @return URL of resource
 	 */
 	public static URL getResource(String name) {
-		return ResourceManager.class.getResource("resources/" + name);
+		return ResourceManager.class.getResource("resource/" + name);
 	}
 
 	/**
@@ -43,7 +43,7 @@ public class ResourceManager {
 	 * @return stream of resource
 	 */
 	public static InputStream getResourceAsStream(String name) {
-		return ResourceManager.class.getResourceAsStream("resources/" + name);
+		return ResourceManager.class.getResourceAsStream("resource/" + name);
 	}
 
 }

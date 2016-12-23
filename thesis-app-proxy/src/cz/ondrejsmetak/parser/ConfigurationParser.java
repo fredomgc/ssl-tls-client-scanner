@@ -162,11 +162,11 @@ public class ConfigurationParser extends BaseParser {
 					Mode tlsFallbackScsv = parseTlsFallbackScsv((Element) node);
 					if (tlsFallbackScsv != null) {
 						ConfigurationRegister.getInstance().setTlsFallbackScsv(tlsFallbackScsv);
+						CipherSuite cs = new CipherSuite(CipherSuiteRegister.TLS_FALLBACK_SCSV_HEX, CipherSuiteRegister.TLS_FALLBACK_SCSV_NAME, tlsFallbackScsv);
+						CipherSuiteRegister.getInstance().addCipherSuite(cs);
 					}
 				}
 			}
-
-			//Element protocolsTag = getElementByTagName(doc, TAG_PROTOCOLS);
 		} catch (ParserConfigurationException | SAXException | IllegalArgumentException | IOException ex) {
 			throw new XmlParserException(ex);
 		}

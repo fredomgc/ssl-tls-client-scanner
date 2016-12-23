@@ -9,6 +9,8 @@ import cz.ondrejsmetak.CipherSuiteRegister;
 import cz.ondrejsmetak.tool.Helper;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -28,13 +30,15 @@ public class ClientHello extends BaseEntity {
 	private static final Hex VERSION_TLS_V_1_3 = new Hex("0304");
 
 	private static final Hex HANDSHAKE_TYPE_CLIENT_HELLO = new Hex("01");
-	
+
 	/**
-	 * 
-	 * @param bytes 
+	 *
+	 * @param bytes
 	 */
 	private Hex versionHandshake;
-	
+
+	private List<CipherSuite> cipherSuites;
+
 	public ClientHello(byte[] bytes) {
 		parse(bytes);
 	}
@@ -59,13 +63,13 @@ public class ClientHello extends BaseEntity {
 		int sessionIdLengthDec = Helper.hexToDec(sessionIdLength);
 		Hex sessionId = sessionIdLengthDec > 0 ? new Hex(Arrays.copyOfRange(bytes, i, i + sessionIdLengthDec)) : new Hex("00");
 		i += sessionIdLengthDec;
-		
+
 		/*cipherSuites*/
 		Hex cipherSuitesLength = new Hex(bytes[i++], bytes[i++]);
 		int cipherSuitesLengthDec = Helper.hexToDec(cipherSuitesLength);
-		parseCipherSuites(Arrays.copyOfRange(bytes, i, i + cipherSuitesLengthDec));
+		cipherSuites = parseCipherSuites(Arrays.copyOfRange(bytes, i, i + cipherSuitesLengthDec));
 		i += cipherSuitesLengthDec;
-		
+
 		/*we could continue in parsing, that we dont't acutally need following values*/
 	}
 
@@ -104,36 +108,47 @@ public class ClientHello extends BaseEntity {
 			throw new IllegalArgumentException("Byte array of cipher suites must have odd length!");
 		}
 
-		List<CipherSuite> cipherSuites = new ArrayList<>();
+		List<CipherSuite> done = new ArrayList<>();
 
 		for (int i = 0; i < bytes.length; i += 2) {
 			Hex hex = new Hex(bytes[i], bytes[i + 1]);
-			cipherSuites.add(CipherSuiteRegister.getInstance().getByHexOrCreateDefault(hex));
+			done.add(CipherSuiteRegister.getInstance().getByHexOrCreateDefault(hex));
 		}
 
-		return cipherSuites;
+		return done;
 	}
 
-	
 	private List<Hex> getSupportedVersionsHandshake() {
 		List<Hex> supported = new ArrayList<>();
-		
-		for(Hex version : getAllVersions()){
-			if(Integer.parseInt(version.toString()) <= Integer.parseInt(versionHandshake.toString())){
+
+		for (Hex version : getAllVersions()) {
+			if (Integer.parseInt(version.toString()) <= Integer.parseInt(versionHandshake.toString())) {
 				supported.add(version);
 			}
 		}
-		
+
 		return supported;
 	}
-	
+
 	public List<Protocol> getSupportedProtocolsDuringHandshake() {
 		List<Protocol> supported = new ArrayList<>();
 		for (Hex protocol : getSupportedVersionsHandshake()) {
 			supported.add(new Protocol(protocol.toString()));
 		}
-		
+
 		return supported;
 	}
-	
+
+	public List<CipherSuite> getCipherSuites() {
+		return Collections.unmodifiableList(cipherSuites);
+	}
+
+	public boolean isTlsFallbackScsv() {
+		for (CipherSuite cipherSuite : cipherSuites) {
+			if (cipherSuite.getHex().equals(CipherSuiteRegister.TLS_FALLBACK_SCSV_HEX)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }
