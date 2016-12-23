@@ -1,17 +1,21 @@
-package cz.ondrejsmetak.tool;
+package cz.ondrejsmetak.parser;
 
+import cz.ondrejsmetak.parser.BaseParser;
 import cz.ondrejsmetak.CipherSuiteRegister;
 import cz.ondrejsmetak.ConfigurationRegister;
 import cz.ondrejsmetak.ResourceManager;
 import cz.ondrejsmetak.entity.CipherSuite;
 import cz.ondrejsmetak.entity.Mode;
+import cz.ondrejsmetak.entity.Protocol;
 import cz.ondrejsmetak.other.XmlParserException;
+import cz.ondrejsmetak.tool.Helper;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -31,9 +35,11 @@ public class ConfigurationParser extends BaseParser {
 	public static final String FILE = "configuration.xml";
 
 	private static final String TAG_CONFIGURATION = "configuration";
+	private static final String TAG_DIRECTIVES = "directives";
 	private static final String TAG_DIRECTIVE = "directive";
 	private static final String TAG_PROTOCOLS = "protocols";
-	private static final String TAG_PROTOCOL = "protocol";
+	private static final String TAG_HIGHEST_SUPPORTED_PROTOCOL = "highestSupportedProtocol";
+	private static final String TAG_OTHER = "other";
 	private static final String TAG_TLS_FALLBACK_SCSV = "tlsFallbackScsv";
 	private static final String TAG_CIPHER_SUITES = "cipherSuites";
 	private static final String TAG_CIPHER_SUITE = "cipherSuite";
@@ -64,7 +70,16 @@ public class ConfigurationParser extends BaseParser {
 	 * @throws XmlParserException
 	 */
 	private void checkNode(Node node) throws XmlParserException {
-		ArrayList supportedTags = new ArrayList<>(Arrays.asList(new String[]{TAG_CONFIGURATION, TAG_CIPHER_SUITE, TAG_CIPHER_SUITES}));
+		ArrayList supportedTags = new ArrayList<>(Arrays.asList(new String[]{
+			TAG_CONFIGURATION,
+			TAG_DIRECTIVES,
+			TAG_DIRECTIVE,
+			TAG_PROTOCOLS,
+			TAG_HIGHEST_SUPPORTED_PROTOCOL,
+			TAG_CIPHER_SUITES,
+			TAG_CIPHER_SUITE,
+			TAG_OTHER,
+			TAG_TLS_FALLBACK_SCSV}));
 
 		if (!supportedTags.contains(node.getNodeName())) {
 			throw new XmlParserException("Unknown tag [%s]. You must use only supported tags!", node.getNodeName());
@@ -122,16 +137,66 @@ public class ConfigurationParser extends BaseParser {
 				checkNode(node);
 
 				if (node.getNodeType() == Node.ELEMENT_NODE) {
+
+					/**
+					 * Directives
+					 */
+					parseDirectives((Element) node);
+
+					/**
+					 * Cipher suites
+					 */
 					parseCipherSuites((Element) node);
+
+					/**
+					 * Protocols
+					 */
+					Protocol highestSupportedProtocol = parseHighestSupportedProtocol(node);
+					if (highestSupportedProtocol != null) {
+						ConfigurationRegister.getInstance().setHighestSupportedProtocol(highestSupportedProtocol);
+					}
+
+					/**
+					 * TLS_FALLBACK_SCSV
+					 */
+					Mode tlsFallbackScsv = parseTlsFallbackScsv((Element) node);
+					if (tlsFallbackScsv != null) {
+						ConfigurationRegister.getInstance().setTlsFallbackScsv(tlsFallbackScsv);
+					}
 				}
 			}
 
+			//Element protocolsTag = getElementByTagName(doc, TAG_PROTOCOLS);
 		} catch (ParserConfigurationException | SAXException | IllegalArgumentException | IOException ex) {
 			throw new XmlParserException(ex);
 		}
 	}
 
-	private void parseDirective(Element node) throws XmlParserException {
+	private Protocol parseHighestSupportedProtocol(Node node) throws XmlParserException {
+		if (!(node instanceof Element) || !((Element) node).getTagName().equals(TAG_HIGHEST_SUPPORTED_PROTOCOL)) {
+			return null;
+		}
+		checkAttributesOfNode(node, ATTRIBUTE_MODE, ATTRIBUTE_NAME);
+
+		Element element = (Element) node;
+		Mode mode = parseMode(element.getAttribute(ATTRIBUTE_MODE), TAG_HIGHEST_SUPPORTED_PROTOCOL);
+		Protocol protocol = new Protocol(element.getAttribute(ATTRIBUTE_NAME), mode);
+
+		return protocol;
+	}
+
+	private Mode parseTlsFallbackScsv(Node node) throws XmlParserException {
+		if (!(node instanceof Element) || !((Element) node).getTagName().equals(TAG_TLS_FALLBACK_SCSV)) {
+			return null;
+		}
+
+		Element element = (Element) node;
+		Mode mode = parseMode(element.getAttribute(ATTRIBUTE_MODE), TAG_TLS_FALLBACK_SCSV);
+
+		return mode;
+	}
+
+	private void parseDirectives(Element node) throws XmlParserException {
 		if (node.getTagName().equals(TAG_DIRECTIVE)) {
 			NodeList directives = node.getElementsByTagName(TAG_DIRECTIVE);
 

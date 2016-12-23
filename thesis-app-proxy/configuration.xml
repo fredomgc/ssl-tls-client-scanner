@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-	<directive name="debug" value="true" />
-	<directive name="port" value="1111" />
+	<directives>
+		<directive name="debug" value="true" />
+		<directive name="port" value="1111" />
+	</directives>
 	
 	<protocols>
-		<protocol name="SSLv2"  mode="mustNotBe"  />
-		<protocol name="SSLv3"  mode="mustNotBe"  />
-		<protocol name="TLS 1.0"  mode="mustNotBe"  />
-		<protocol name="TLS 1.1"  mode="mustNotBe"  />
-		<protocol name="TLS 1.2"  mode="mustNotBe" />
+		<highestSupportedProtocol name="SSLv2"  mode="canBe" />
 	</protocols>
-	
-	<tlsFallbackScsv mode="mustBe" />
 	
 	<cipherSuites>
 		<cipherSuite hexValue="c02b" name="TLS_ECDHE_WITH_AES_128_GCM_SHA256" mode="mustBe" />
 		<cipherSuite hexValue="000a" name="TLS_RSA_WITH_3DES_EDE_CBC_SHA" mode="mustNotBe" />
 	</cipherSuites>
+	
+	<other>
+		<tlsFallbackScsv mode="mustBe" />
+	</other>
 </configuration>

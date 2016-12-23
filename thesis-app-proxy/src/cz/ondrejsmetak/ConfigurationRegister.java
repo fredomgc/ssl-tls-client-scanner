@@ -1,7 +1,10 @@
 package cz.ondrejsmetak;
 
+import cz.ondrejsmetak.entity.Mode;
+import cz.ondrejsmetak.entity.Protocol;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -26,6 +29,13 @@ public class ConfigurationRegister {
 	 */
 	public static final String DEBUG = "debug";
 	public static final String PORT = "port";
+
+	/**
+	 * Other values
+	 */
+	private Protocol highestSupportedProtocol = null;
+	
+	private Mode tlsFallbackScsv = null;
 
 	protected ConfigurationRegister() {
 		//no direct instantiation
@@ -135,13 +145,8 @@ public class ConfigurationRegister {
 		return getDirectives().contains(name);
 	}
 
-	
 	public void setPort(Integer value) {
 		setDirective(PORT, value);
-	}
-
-	public Integer getOSaftFolderAbsolutePath() {
-		return (Integer) getDirective(PORT);
 	}
 
 	public void setDebug(Boolean value) {
@@ -150,5 +155,26 @@ public class ConfigurationRegister {
 
 	public Boolean isDebug() {
 		return (Boolean) getDirective(DEBUG);
+	}
+
+
+	public Mode getTlsFallbackScsv() {
+		return tlsFallbackScsv;
+	}
+		
+	public void setTlsFallbackScsv(Mode tlsFallbackScsv){
+		this.tlsFallbackScsv = tlsFallbackScsv;
+	}
+
+	public Protocol getHighestSupportedProtocol() {
+		return highestSupportedProtocol;
+	}
+	
+	public List<Protocol> getSupportedProtocols(){
+		return Protocol.getProtocolsUpTo(highestSupportedProtocol.getType(), highestSupportedProtocol.getMode());
+	}
+
+	public void setHighestSupportedProtocol(Protocol highestSupportedProtocol) {
+		this.highestSupportedProtocol = highestSupportedProtocol;
 	}
 }

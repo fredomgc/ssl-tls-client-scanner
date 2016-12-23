@@ -1,4 +1,4 @@
-package cz.ondrejsmetak.tool;
+package cz.ondrejsmetak.parser;
 
 import cz.ondrejsmetak.entity.Mode;
 import cz.ondrejsmetak.entity.Mode.Type;

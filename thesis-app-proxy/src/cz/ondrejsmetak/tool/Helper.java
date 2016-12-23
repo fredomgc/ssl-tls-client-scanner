@@ -24,6 +24,9 @@ public class Helper {
 	private static final Pattern isHex = Pattern.compile("^[0-9A-Fa-f]+$");
 
 	
+	
+	
+	
 	/**
 	 * Is input boolean value in its text form?
 	 *

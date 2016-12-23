@@ -10,6 +10,7 @@ import cz.ondrejsmetak.tool.Helper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  *
@@ -27,8 +28,12 @@ public class ClientHello extends BaseEntity {
 	private static final Hex VERSION_TLS_V_1_3 = new Hex("0304");
 
 	private static final Hex HANDSHAKE_TYPE_CLIENT_HELLO = new Hex("01");
-
-	//private List<CipherSuite> cipherSuites
+	
+	/**
+	 * 
+	 * @param bytes 
+	 */
+	private Hex versionHandshake;
 	
 	public ClientHello(byte[] bytes) {
 		parse(bytes);
@@ -45,7 +50,7 @@ public class ClientHello extends BaseEntity {
 		/*Handshake protocol*/
 		Hex handshakeType = new Hex(bytes[i++]);
 		Hex lengthHandshake = new Hex(bytes[i++], bytes[i++], bytes[i++]);
-		Hex versionHandshake = new Hex(bytes[i++], bytes[i++]);
+		versionHandshake = new Hex(bytes[i++], bytes[i++]);
 		Hex random = new Hex(Arrays.copyOfRange(bytes, i, i + 32)); //32 bytes long
 		i += 32;
 
@@ -108,4 +113,27 @@ public class ClientHello extends BaseEntity {
 
 		return cipherSuites;
 	}
+
+	
+	private List<Hex> getSupportedVersionsHandshake() {
+		List<Hex> supported = new ArrayList<>();
+		
+		for(Hex version : getAllVersions()){
+			if(Integer.parseInt(version.toString()) <= Integer.parseInt(versionHandshake.toString())){
+				supported.add(version);
+			}
+		}
+		
+		return supported;
+	}
+	
+	public List<Protocol> getSupportedProtocolsDuringHandshake() {
+		List<Protocol> supported = new ArrayList<>();
+		for (Hex protocol : getSupportedVersionsHandshake()) {
+			supported.add(new Protocol(protocol.toString()));
+		}
+		
+		return supported;
+	}
+	
 }
