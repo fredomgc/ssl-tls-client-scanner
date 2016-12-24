@@ -148,7 +148,12 @@ public class ConfigurationRegister {
 	public void setPort(Integer value) {
 		setDirective(PORT, value);
 	}
-
+	
+	public Integer getPort() {
+		return (Integer) getDirective(PORT);
+	}
+	
+	
 	public void setDebug(Boolean value) {
 		setDirective(DEBUG, value);
 	}

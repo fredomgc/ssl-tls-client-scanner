@@ -2,7 +2,7 @@
 <configuration>
 	<directives>
 		<directive name="debug" value="true" />
-		<directive name="port" value="1111" />
+		<directive name="port" value="6880" />
 	</directives>
 	
 	<protocols>

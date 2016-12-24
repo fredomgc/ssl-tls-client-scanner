@@ -95,6 +95,10 @@ public class Helper {
 		return isInteger(input, 10);
 	}
 
+	public static Integer hexToInt(String hex) {
+		return Integer.parseInt(hex.trim(), 16);
+	}
+	
 	public static String toHexString(byte[] array) {
 		return DatatypeConverter.printHexBinary(array);
 	}

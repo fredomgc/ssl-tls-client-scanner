@@ -1,12 +1,17 @@
 package cz.ondrejsmetak;
 
 import cz.ondrejsmetak.entity.ClientHello;
+import cz.ondrejsmetak.entity.ReportMessage;
+import cz.ondrejsmetak.scanner.ClientHelloScanner;
+import cz.ondrejsmetak.tool.Helper;
+import cz.ondrejsmetak.tool.Log;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.HttpRequest;
+import java.util.List;
 import org.littleshoot.proxy.HttpFilters;
 import org.littleshoot.proxy.HttpFiltersAdapter;
 import org.littleshoot.proxy.HttpFiltersSourceAdapter;
@@ -18,32 +23,39 @@ import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
  * @author Ondřej Směták <posta@ondrejsmetak.cz>
  */
 public class ProxyServer {
-
+	
+	private HttpProxyServer server;
+	
 	public void run() {
-
-		HttpProxyServer server = DefaultHttpProxyServer.bootstrap()
-				.withPort(6880)
+		server = DefaultHttpProxyServer.bootstrap()
+				.withPort(ConfigurationRegister.getInstance().getPort())
 				.withFiltersSource(new MyHttpFiltersSourceAdapter())
 				.start();
+		
 	}
-
-	private Integer hexToInt(String hex) {
-		return Integer.parseInt(hex.trim(), 16);
+	
+	public void stop() {
+		if (server != null) {
+			server.stop();
+		}
 	}
-
+	
 	private void handleClientHello(byte[] bytes, String source) {
 		if (!ClientHello.isClientHello(bytes)) {
 			return; //nothing to do
 		}
 		
-		ClientHello clientHello = new ClientHello(bytes);
-		//clientHello.
+		if (ConfigurationRegister.getInstance().isDebug()) {
+			Log.infoln(String.format("Captured Client Hello from [%s], analysis started.", source));
+		}
 		
-		//totototototo
+		ClientHello clientHello = new ClientHello(bytes);
+		ClientHelloScanner scanner = new ClientHelloScanner(clientHello);
+		ReportRegister.getInstance().addReportMessages(scanner.getReportMessages());
 	}
-
+	
 	private class MyHttpFiltersSourceAdapter extends HttpFiltersSourceAdapter {
-
+		
 		@Override
 		public HttpFilters filterRequest(HttpRequest originalRequest, ChannelHandlerContext ctx) {
 
@@ -55,37 +67,38 @@ public class ProxyServer {
 				public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 					ByteBuf buf = (ByteBuf) msg;
 
+					/**
+					 * Captured bytes
+					 */
 					byte[] bytes = new byte[buf.readableBytes()];
 					int readerIndex = buf.readerIndex();
 					buf.getBytes(readerIndex, bytes);
 
-					//ty byty jsou v desitkove soustave, proto pro porovnavani toto:
 					/**
-					 * TODO Toto pole bytes stačí přečíst a zkontrolovat
+					 * Source of communication
 					 */
-					//160301
-					if (bytes[0] == hexToInt("16") && bytes[1] == hexToInt("03") && bytes[2] == hexToInt("01")) {
-						System.err.println("Sláva to je client hello s velikosti " + bytes.length);
-						System.out.println(">>> " + ByteBufUtil.hexDump(buf));
-					}
-
 					Channel ch = ctx.channel();
 					String peerHost = ((java.net.InetSocketAddress) ch.remoteAddress()).getAddress().getHostAddress();
-					System.err.println("Hej zdroj je: " + peerHost);
 
+					/**
+					 * If this is ClientHello, run scan
+					 */
 					handleClientHello(bytes, peerHost);
 
+					/**
+					 * Call super method
+					 */
 					super.channelRead(ctx, msg);
 				}
 			});
 
 			/**
-			 * Toto se musí vrátit
+			 * This object must be returned
 			 */
 			return new HttpFiltersAdapter(originalRequest) {
-
+				
 			};
 		}
 	}
-
+	
 }

@@ -197,9 +197,8 @@ public class ConfigurationParser extends BaseParser {
 	}
 
 	private void parseDirectives(Element node) throws XmlParserException {
-		if (node.getTagName().equals(TAG_DIRECTIVE)) {
+		if (node.getTagName().equals(TAG_DIRECTIVES)) {
 			NodeList directives = node.getElementsByTagName(TAG_DIRECTIVE);
-
 			for (int i = 0; i < directives.getLength(); i++) {
 				parseDirective(directives.item(i));
 			}
@@ -212,7 +211,7 @@ public class ConfigurationParser extends BaseParser {
 		}
 
 		Element element = (Element) node;
-		String name = element.getAttribute(ATTRIBUTE_HEX_VALUE);
+		String name = element.getAttribute(ATTRIBUTE_NAME);
 		String value = element.getAttribute(ATTRIBUTE_VALUE);
 		setDirective(name, value);
 
