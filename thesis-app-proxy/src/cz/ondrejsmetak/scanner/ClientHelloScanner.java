@@ -16,25 +16,47 @@ import java.util.List;
  */
 public class ClientHelloScanner extends BaseScanner {
 
+	/**
+	 * Client Hello, that will be scanned
+	 */
 	private ClientHello clientHello;
 
+	/**
+	 * Collection of messages describing result of scans
+	 */
 	private List<ReportMessage> reportMessages = new ArrayList<>();
 
+	/**
+	 * Creates a new scanner for the given Client Hello
+	 *
+	 * @param clientHello client hello, that will be scanned
+	 */
 	public ClientHelloScanner(ClientHello clientHello) {
 		this.clientHello = clientHello;
 		doScan();
 	}
 
+	/**
+	 * Returns collection of messages describing scans of Client Hello
+	 *
+	 * @return
+	 */
 	public List<ReportMessage> getReportMessages() {
 		return reportMessages;
 	}
 
+	/**
+	 * Scan content of Client Hello
+	 */
 	private void doScan() {
 		doScanProtocols();
 		doScanTlsFallbackScsv();
 		doScanCipherSuites();
 	}
 
+	/**
+	 * Scan offered cipher suites
+	 */
 	private void doScanCipherSuites() {
 		for (CipherSuite cipherSuite : CipherSuiteRegister.getInstance().getCipherSuites()) {
 			if (cipherSuite.getHex().equals(CipherSuiteRegister.TLS_FALLBACK_SCSV_HEX)) {
@@ -58,6 +80,9 @@ public class ClientHelloScanner extends BaseScanner {
 
 	}
 
+	/**
+	 * Scan offered cipher suites for support of TLS_FALLBACK_SCSV
+	 */
 	private void doScanTlsFallbackScsv() {
 		Mode mode = ConfigurationRegister.getInstance().getTlsFallbackScsv();
 		String message = null;
@@ -76,6 +101,9 @@ public class ClientHelloScanner extends BaseScanner {
 		}
 	}
 
+	/**
+	 * Scan protocols offered in Client Hello
+	 */
 	private void doScanProtocols() {
 		Protocol highestSupportedProtocol = ConfigurationRegister.getInstance().getHighestSupportedProtocol();
 		String message = null;
