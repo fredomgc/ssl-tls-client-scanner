@@ -8,6 +8,8 @@ package cz.ondrejsmetak.tool;
 import cz.ondrejsmetak.entity.Hex;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -27,6 +29,18 @@ import org.apache.commons.lang3.SystemUtils;
 public class Helper {
 
 	private static final Pattern isHex = Pattern.compile("^[0-9A-Fa-f]+$");
+
+	public static boolean isLocalPortAvailable(int port) {
+		try {
+			// Try to open a LOCAL port with ServerSocket
+			new ServerSocket(port).close();
+			// Local port can be opened, so it's available
+			return true;
+		} catch (IOException e) {
+			// Local port cannot be opened, it's in use
+			return false;
+		}
+	}
 
 	/**
 	 * Returns path to current working directory
@@ -98,7 +112,7 @@ public class Helper {
 	public static Integer hexToInt(String hex) {
 		return Integer.parseInt(hex.trim(), 16);
 	}
-	
+
 	public static String toHexString(byte[] array) {
 		return DatatypeConverter.printHexBinary(array);
 	}

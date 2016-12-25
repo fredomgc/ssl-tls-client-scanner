@@ -26,7 +26,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
- * Storage for configuration directives
+ * Parses configuration
  *
  * @author Ondřej Směták <posta@ondrejsmetak.cz>
  */
@@ -128,6 +128,13 @@ public class ConfigurationParser extends BaseParser {
 			doc.getDocumentElement().normalize();
 
 			NodeList tags = doc.getElementsByTagName("*");
+			NodeList configurations = doc.getElementsByTagName(TAG_CONFIGURATION);
+
+			if (configurations.getLength() != 1 || !(configurations.item(0) instanceof Element)) {
+				throw new XmlParserException(String.format("Tag [%s] must be specified exatly once.", TAG_CONFIGURATION));
+			}
+
+			Element configuration = (Element) configurations.item(0);
 
 			/**
 			 * Parse configuration directives and store them
@@ -147,31 +154,38 @@ public class ConfigurationParser extends BaseParser {
 					 * Cipher suites
 					 */
 					parseCipherSuites((Element) node);
-
-					/**
-					 * Protocols
-					 */
-					Protocol highestSupportedProtocol = parseHighestSupportedProtocol(node);
-					if (highestSupportedProtocol != null) {
-						ConfigurationRegister.getInstance().setHighestSupportedProtocol(highestSupportedProtocol);
-					}
-
-					/**
-					 * TLS_FALLBACK_SCSV
-					 */
-					Mode tlsFallbackScsv = parseTlsFallbackScsv((Element) node);
-					if (tlsFallbackScsv != null) {
-						ConfigurationRegister.getInstance().setTlsFallbackScsv(tlsFallbackScsv);
-						CipherSuite cs = new CipherSuite(CipherSuiteRegister.TLS_FALLBACK_SCSV_HEX, CipherSuiteRegister.TLS_FALLBACK_SCSV_NAME, tlsFallbackScsv);
-						CipherSuiteRegister.getInstance().addCipherSuite(cs);
-					}
 				}
+			}
+
+			/**
+			 * Highest supported protocol
+			 */
+			Protocol highestSupportedProtocol = parseHighestSupportedProtocol(getElementByTagName(configuration, TAG_HIGHEST_SUPPORTED_PROTOCOL));
+			if (highestSupportedProtocol != null) {
+				ConfigurationRegister.getInstance().setHighestSupportedProtocol(highestSupportedProtocol);
+			}
+
+			/**
+			 * TLS_FALLBACK_SCSV
+			 */
+			Mode tlsFallbackScsv = parseTlsFallbackScsv(getElementByTagName(configuration, TAG_TLS_FALLBACK_SCSV));
+			if (tlsFallbackScsv != null) {
+				ConfigurationRegister.getInstance().setTlsFallbackScsv(tlsFallbackScsv);
+				CipherSuite cs = new CipherSuite(CipherSuiteRegister.TLS_FALLBACK_SCSV_HEX, CipherSuiteRegister.TLS_FALLBACK_SCSV_NAME, tlsFallbackScsv);
+				CipherSuiteRegister.getInstance().addCipherSuite(cs);
 			}
 		} catch (ParserConfigurationException | SAXException | IllegalArgumentException | IOException ex) {
 			throw new XmlParserException(ex);
 		}
 	}
 
+	/**
+	 * Parse "<highestSupportedProtocol>" tag
+	 *
+	 * @param node tag
+	 * @return protocol, that will be used during analysis of Client Hello
+	 * @throws XmlParserException in case of any error
+	 */
 	private Protocol parseHighestSupportedProtocol(Node node) throws XmlParserException {
 		if (!(node instanceof Element) || !((Element) node).getTagName().equals(TAG_HIGHEST_SUPPORTED_PROTOCOL)) {
 			return null;
@@ -185,6 +199,13 @@ public class ConfigurationParser extends BaseParser {
 		return protocol;
 	}
 
+	/**
+	 * Parse "<tlsFallbackScsv>" tag
+	 *
+	 * @param node tag
+	 * @return mode used during analysis of TLS_FALLBACK_SCSV
+	 * @throws XmlParserException in case of any error
+	 */
 	private Mode parseTlsFallbackScsv(Node node) throws XmlParserException {
 		if (!(node instanceof Element) || !((Element) node).getTagName().equals(TAG_TLS_FALLBACK_SCSV)) {
 			return null;
@@ -196,6 +217,12 @@ public class ConfigurationParser extends BaseParser {
 		return mode;
 	}
 
+	/**
+	 * Parse parent "<directives>" tag
+	 *
+	 * @param node parent tag
+	 * @throws XmlParserException in case of any error
+	 */
 	private void parseDirectives(Element node) throws XmlParserException {
 		if (node.getTagName().equals(TAG_DIRECTIVES)) {
 			NodeList directives = node.getElementsByTagName(TAG_DIRECTIVE);
@@ -205,6 +232,12 @@ public class ConfigurationParser extends BaseParser {
 		}
 	}
 
+	/**
+	 * Parse tag, that contains configuration directive
+	 *
+	 * @param node tag with configuration directive
+	 * @throws XmlParserException in case of any error
+	 */
 	private void parseDirective(Node node) throws XmlParserException {
 		if (!(node instanceof Element)) {
 			return;
@@ -214,7 +247,6 @@ public class ConfigurationParser extends BaseParser {
 		String name = element.getAttribute(ATTRIBUTE_NAME);
 		String value = element.getAttribute(ATTRIBUTE_VALUE);
 		setDirective(name, value);
-
 	}
 
 	/**
@@ -246,6 +278,13 @@ public class ConfigurationParser extends BaseParser {
 		}
 	}
 
+	/**
+	 * Sets port, that is being used by proxy server
+	 *
+	 * @param name name of directive
+	 * @param value value of directive
+	 * @throws XmlParserException if given value has unsupported format
+	 */
 	private void setPort(String name, String value) throws XmlParserException {
 		if (name.equalsIgnoreCase(ConfigurationRegister.PORT)) {
 			if (!Helper.isInteger(value)) {

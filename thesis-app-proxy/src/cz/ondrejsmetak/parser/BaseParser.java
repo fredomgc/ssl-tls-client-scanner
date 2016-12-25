@@ -16,6 +16,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
+ * Base abstract class for all parsers in application
  *
  * @author Ondřej Směták <posta@ondrejsmetak.cz>
  */
@@ -29,7 +30,8 @@ public abstract class BaseParser {
 	 * Parse mode from string value
 	 *
 	 * @param codename string value of mode
-	 * @param tagName name of tag, that contains mode value, that will be just parsed
+	 * @param tagName name of tag, that contains mode value, that will be just
+	 * parsed
 	 * @param forbidden collection of forbidden values
 	 * @return mode
 	 * @throws XmlParserException if forbidden value is used

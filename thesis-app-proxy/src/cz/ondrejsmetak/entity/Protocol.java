@@ -172,6 +172,15 @@ public class Protocol extends BaseEntity {
 		return mode;
 	}
 
+	/**
+	 * Returns collection of sorted protocols by its technical timeline up to
+	 * the given value
+	 *
+	 * @param type upper type of the protocol
+	 * @param withMode mode, that will be set all protocols in the resulting
+	 * collection
+	 * @return collection of protocols
+	 */
 	public static List<Protocol> getProtocolsUpTo(Type type, Mode withMode) {
 		List<Protocol> protocols = new ArrayList<>();
 

@@ -1,17 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package cz.ondrejsmetak;
 
-import static cz.ondrejsmetak.ConfigurationRegister.DEBUG;
 import cz.ondrejsmetak.entity.ReportMessage;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 /**
+ * Holds messages, that will be used during creation of report
  *
  * @author Ondřej Směták <posta@ondrejsmetak.cz>
  */
@@ -22,8 +17,11 @@ public class ReportRegister {
 	 */
 	private static ReportRegister instance = null;
 
+	/**
+	 * Register of all messager
+	 */
 	private List<ReportMessage> register = new ArrayList<>();
-	
+
 	/**
 	 * Returns a instance of this class
 	 *
@@ -35,12 +33,22 @@ public class ReportRegister {
 		}
 		return instance;
 	}
-	
-	public void addReportMessages(Collection<ReportMessage> messages){
+
+	/**
+	 * Adds message to this register
+	 *
+	 * @param messages message, that will be added
+	 */
+	public void addReportMessages(Collection<ReportMessage> messages) {
 		register.addAll(messages);
 	}
-	
-	public List<ReportMessage> getReportMessages(){
+
+	/**
+	 * Returns collection of all messages in this register
+	 *
+	 * @return collection of all messages
+	 */
+	public List<ReportMessage> getReportMessages() {
 		return register;
 	}
 }

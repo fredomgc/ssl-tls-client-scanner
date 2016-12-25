@@ -14,16 +14,37 @@ public class CipherSuite {
 	 */
 	private Hex hexCode;
 
+	/**
+	 * Name defined by user. So name compliant with RFC standards is NOT
+	 * required
+	 */
 	private String name;
 
+	/**
+	 * Mode, that will be used during analysis of Client Hello
+	 */
 	private Mode mode;
 
+	/**
+	 * Creates a new cipher suite with the given parameters
+	 *
+	 * @param hexCode hexadecimal code
+	 * @param name name given by user
+	 * @param mode mode used during analysis
+	 */
 	public CipherSuite(Hex hexCode, String name, Mode mode) {
 		this.hexCode = hexCode;
 		this.name = name;
 		this.mode = mode;
 	}
 
+	/**
+	 * Creates a new cipher suite with the given parameters
+	 *
+	 * @param hexCode hexadecimal code in text form
+	 * @param name name given by user
+	 * @param mode mode used during analysis
+	 */
 	public CipherSuite(String hexCode, String name, Mode mode) {
 		this.hexCode = new Hex(hexCode);
 		this.name = name;
@@ -74,6 +95,5 @@ public class CipherSuite {
 		}
 		return true;
 	}
-	
-	
+
 }

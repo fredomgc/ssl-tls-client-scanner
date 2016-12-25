@@ -34,7 +34,7 @@ public class ConfigurationRegister {
 	 * Other values
 	 */
 	private Protocol highestSupportedProtocol = null;
-	
+
 	private Mode tlsFallbackScsv = null;
 
 	protected ConfigurationRegister() {
@@ -148,12 +148,11 @@ public class ConfigurationRegister {
 	public void setPort(Integer value) {
 		setDirective(PORT, value);
 	}
-	
+
 	public Integer getPort() {
 		return (Integer) getDirective(PORT);
 	}
-	
-	
+
 	public void setDebug(Boolean value) {
 		setDirective(DEBUG, value);
 	}
@@ -162,20 +161,19 @@ public class ConfigurationRegister {
 		return (Boolean) getDirective(DEBUG);
 	}
 
-
 	public Mode getTlsFallbackScsv() {
 		return tlsFallbackScsv;
 	}
-		
-	public void setTlsFallbackScsv(Mode tlsFallbackScsv){
+
+	public void setTlsFallbackScsv(Mode tlsFallbackScsv) {
 		this.tlsFallbackScsv = tlsFallbackScsv;
 	}
 
 	public Protocol getHighestSupportedProtocol() {
 		return highestSupportedProtocol;
 	}
-	
-	public List<Protocol> getSupportedProtocols(){
+
+	public List<Protocol> getSupportedProtocols() {
 		return Protocol.getProtocolsUpTo(highestSupportedProtocol.getType(), highestSupportedProtocol.getMode());
 	}
 

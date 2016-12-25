@@ -46,10 +46,12 @@ public class HtmlExport extends BaseExport {
 	 * @return body of HTML file
 	 * @throws FileNotFoundException
 	 */
-	private String getContent(List<ReportMessage> messages, Date timestamp) throws FileNotFoundException {
+	private String getContent(List<ReportMessage> messages, Date timestampOfStart, Date timestampOfEnd) throws FileNotFoundException {
 		StringBuilder sb = new StringBuilder();
-		sb.append(String.format("<h1>SSL/TLS scan report <small>created %s</small></h1>", Helper.getFormattedDateTime(timestamp, false)));
+		String timestampOfStartStr = Helper.getFormattedDateTime(timestampOfStart, false);
+		String timestampOfEndStr = Helper.getFormattedDateTime(timestampOfEnd, false);
 
+		sb.append(String.format("<h1>SSL/TLS analysis <small>%s - %s</small></h1>", timestampOfStartStr, timestampOfEndStr));
 		sb.append(doReport(messages));
 
 		String template = getTemplate();
@@ -144,16 +146,18 @@ public class HtmlExport extends BaseExport {
 	/**
 	 * Exports collection of report messages to HTML file
 	 *
-	 * @param reports collection of report messages
+	 * @param messages collection of report messages
+	 * @param timestampOfStart timestamp of moment, when proxy server started
 	 * @return path to newly created HTMl file
 	 * @throws IOException in case of any error
 	 */
-	public String export(List<ReportMessage> messages) throws IOException {
-		Date timestamp = new Date();
-		File target = new File(Helper.getWorkingDirectory() + File.separator + "report_" + Helper.getFormattedDateTime(timestamp, true) + ".htm");
+	public String export(List<ReportMessage> messages, Date timestampOfStart) throws IOException {
+		Date timestampOfEnd = new Date();
+		String timestampOfEndStr = Helper.getFormattedDateTime(timestampOfEnd, true);
 
+		File target = new File(Helper.getWorkingDirectory() + File.separator + "report_" + timestampOfEndStr + ".htm");
 		try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(target.getAbsolutePath()), "utf-8"))) {
-			writer.write(getContent(messages, timestamp));
+			writer.write(getContent(messages, timestampOfStart, timestampOfEnd));
 			writer.flush();
 			writer.close();
 		}

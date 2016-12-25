@@ -10,8 +10,15 @@ import java.util.Objects;
  */
 public class Hex {
 
+	/**
+	 * Data used for storing hexadecimal value
+	 */
 	private String data;
-	private int paddingToLength = 0; //kolik "cifer" bude mit sestnactkova reprezentace
+
+	/**
+	 * How many "digits" will be used for hexadecimal representation
+	 */
+	private int paddingToLength = 0;
 
 	/**
 	 * Creation from value of (one) byte
@@ -22,10 +29,20 @@ public class Hex {
 		this(Helper.decToHex(oneByte), 1);
 	}
 
+	/**
+	 * Creation from collection of bytes
+	 *
+	 * @param bytes collection of bytes
+	 */
 	public Hex(byte... bytes) {
 		this(Helper.toHexString(bytes));
 	}
 
+	/**
+	 * Creation from direct hexadeciamal value written as string
+	 *
+	 * @param data hexadecimal value
+	 */
 	public Hex(String data) {
 		String input = normalizeInput(data);
 		checkLength(input);
@@ -39,10 +56,11 @@ public class Hex {
 	}
 
 	/**
-	 * Creation from direct hexadeciamal value written asi string
+	 * Creation from direct hexadeciamal value written as string with the given
+	 * padding
 	 *
-	 * @param data hexadecimal value, n digits allowed
-	 * @param paddingToBytesLength padding to how many digits
+	 * @param data hexadecimal value
+	 * @param paddingToBytesLength padding to given digits
 	 */
 	public Hex(String data, int paddingToBytesLength) {
 		String input = normalizeInput(data);
@@ -52,6 +70,11 @@ public class Hex {
 		this.data = createToString(input, paddingToLength);
 	}
 
+	/**
+	 * Checks, if length of the given data is correct
+	 *
+	 * @param data hexadecimal value
+	 */
 	private void checkLength(String data) {
 		if (data.isEmpty()) {
 			throw new IllegalArgumentException("Length of input hex representation must be non-zero.");
@@ -79,16 +102,30 @@ public class Hex {
 
 	/**
 	 * How many digits has this hexadecimal value
-	 * @return 
+	 *
+	 * @return
 	 */
-	public int getDigits(){
+	public int getDigits() {
 		return this.data.length();
 	}
-	
+
+	/**
+	 * Creates text representation of hexadecimal value with given padding
+	 *
+	 * @param data hexadecimal data, that will be formatted
+	 * @param paddingToLength padding to given digits
+	 * @return formatted data
+	 */
 	private String createToString(String data, int paddingToLength) {
 		return String.format("%1$" + paddingToLength + "s", data).replace(' ', '0');
 	}
 
+	/**
+	 * Parses user input to single supported format
+	 *
+	 * @param input raw user input
+	 * @return normalized user input
+	 */
 	private String normalizeInput(String input) {
 		input = input.replaceAll(",", "");
 		input = input.replaceAll("0x", "");

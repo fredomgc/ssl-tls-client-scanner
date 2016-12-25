@@ -23,39 +23,49 @@ import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
  * @author Ondřej Směták <posta@ondrejsmetak.cz>
  */
 public class ProxyServer {
-	
+
 	private HttpProxyServer server;
-	
+
+	public static boolean checkPort() {
+		int localPort = ConfigurationRegister.getInstance().getPort();
+
+		if (!Helper.isLocalPortAvailable(localPort)) {
+			Log.errorln(String.format("Port [%s] is already being used. Please specify different port.", localPort));
+			return false;
+		}
+
+		return true;
+	}
+
 	public void run() {
 		server = DefaultHttpProxyServer.bootstrap()
 				.withPort(ConfigurationRegister.getInstance().getPort())
 				.withFiltersSource(new MyHttpFiltersSourceAdapter())
 				.start();
-		
 	}
-	
+
 	public void stop() {
 		if (server != null) {
 			server.stop();
 		}
 	}
-	
+
 	private void handleClientHello(byte[] bytes, String source) {
 		if (!ClientHello.isClientHello(bytes)) {
 			return; //nothing to do
 		}
-		
+
 		if (ConfigurationRegister.getInstance().isDebug()) {
 			Log.infoln(String.format("Captured Client Hello from [%s], analysis started.", source));
 		}
-		
+
 		ClientHello clientHello = new ClientHello(bytes);
 		ClientHelloScanner scanner = new ClientHelloScanner(clientHello);
 		ReportRegister.getInstance().addReportMessages(scanner.getReportMessages());
 	}
-	
+
 	private class MyHttpFiltersSourceAdapter extends HttpFiltersSourceAdapter {
-		
+
 		@Override
 		public HttpFilters filterRequest(HttpRequest originalRequest, ChannelHandlerContext ctx) {
 
@@ -96,9 +106,9 @@ public class ProxyServer {
 			 * This object must be returned
 			 */
 			return new HttpFiltersAdapter(originalRequest) {
-				
+
 			};
 		}
 	}
-	
+
 }

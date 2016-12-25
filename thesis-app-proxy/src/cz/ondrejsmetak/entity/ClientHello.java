@@ -1,25 +1,22 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package cz.ondrejsmetak.entity;
 
 import cz.ondrejsmetak.CipherSuiteRegister;
 import cz.ondrejsmetak.tool.Helper;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
+ * Client Hello. Message sent by client during SSL/TLS handshake
  *
  * @author Ondřej Směták <posta@ondrejsmetak.cz>
  */
 public class ClientHello extends BaseEntity {
 
+	/**
+	 * Usefull hexadecimal constants, that are used inside Client Hello
+	 */
 	private static final Hex CONTENT_TYPE = new Hex("16");
 
 	private static final Hex VERSION_SSL_V_2 = new Hex("0200");
@@ -32,17 +29,29 @@ public class ClientHello extends BaseEntity {
 	private static final Hex HANDSHAKE_TYPE_CLIENT_HELLO = new Hex("01");
 
 	/**
-	 *
-	 * @param bytes
+	 * Version in hexadecimal format used in handshake
 	 */
 	private Hex versionHandshake;
 
+	/**
+	 * Collection of cipher suites offered by client
+	 */
 	private List<CipherSuite> cipherSuites;
 
+	/**
+	 * Creates a new Client Hello from array of bytes
+	 *
+	 * @param bytes array of bytes
+	 */
 	public ClientHello(byte[] bytes) {
 		parse(bytes);
 	}
 
+	/**
+	 * Parses array of bytes and fills attributes
+	 *
+	 * @param bytes array of bytes
+	 */
 	private void parse(byte[] bytes) {
 		int i = 0;
 
@@ -59,7 +68,7 @@ public class ClientHello extends BaseEntity {
 		i += 32;
 
 		/*sessionId*/
-		Hex sessionIdLength = new Hex(bytes[i++]); //TODO, kde je to v datech
+		Hex sessionIdLength = new Hex(bytes[i++]);
 		int sessionIdLengthDec = Helper.hexToDec(sessionIdLength);
 		Hex sessionId = sessionIdLengthDec > 0 ? new Hex(Arrays.copyOfRange(bytes, i, i + sessionIdLengthDec)) : new Hex("00");
 		i += sessionIdLengthDec;
@@ -70,9 +79,14 @@ public class ClientHello extends BaseEntity {
 		cipherSuites = parseCipherSuites(Arrays.copyOfRange(bytes, i, i + cipherSuitesLengthDec));
 		i += cipherSuitesLengthDec;
 
-		/*we could continue in parsing, that we dont't acutally need following values*/
+		/*we could continue in parsing, that we dont't acutally care about following values*/
 	}
 
+	/**
+	 * Returns collection containing all possible versions used in Client Hello
+	 *
+	 * @return collection with all possible versions
+	 */
 	private static List<Hex> getAllVersions() {
 		Hex[] data = new Hex[]{
 			VERSION_SSL_V_2,
@@ -86,6 +100,12 @@ public class ClientHello extends BaseEntity {
 		return Arrays.asList(data);
 	}
 
+	/**
+	 * Determines, if array of bytes if Client Hello
+	 *
+	 * @param bytes array of bytes
+	 * @return true, if array of bytes represents Client Hello, false otherwise
+	 */
 	public static boolean isClientHello(byte[] bytes) {
 		//we need at least 1 bytes to determine
 		if (bytes.length < 1) {
@@ -103,6 +123,12 @@ public class ClientHello extends BaseEntity {
 
 	}
 
+	/**
+	 * Parses part of Client Hello, that consists of offered cipher suites
+	 *
+	 * @param bytes array of bytes
+	 * @return collection of offered cipher suites
+	 */
 	private List<CipherSuite> parseCipherSuites(byte[] bytes) {
 		if (Helper.isEven(bytes.length)) {
 			throw new IllegalArgumentException("Byte array of cipher suites must have odd length!");
@@ -118,7 +144,13 @@ public class ClientHello extends BaseEntity {
 		return done;
 	}
 
-	private List<Hex> getSupportedVersionsHandshake() {
+	/**
+	 * Returns collection of hexadecimal values, where each hexadecimal value
+	 * represents version (of protocol) supported by client.
+	 *
+	 * @return collection of supported protocol versions
+	 */
+	private List<Hex> getSupportedProtocolsHexDuringHandshake() {
 		List<Hex> supported = new ArrayList<>();
 
 		for (Hex version : getAllVersions()) {
@@ -130,19 +162,35 @@ public class ClientHello extends BaseEntity {
 		return supported;
 	}
 
+	/**
+	 * Returns collection of protocols supported by client
+	 *
+	 * @return collection of supported protocols
+	 */
 	public List<Protocol> getSupportedProtocolsDuringHandshake() {
 		List<Protocol> supported = new ArrayList<>();
-		for (Hex protocol : getSupportedVersionsHandshake()) {
+		for (Hex protocol : getSupportedProtocolsHexDuringHandshake()) {
 			supported.add(new Protocol(protocol.toString()));
 		}
 
 		return supported;
 	}
 
+	/**
+	 * Returns collection of offered cipher suites
+	 *
+	 * @return collection of offered cipher suites
+	 */
 	public List<CipherSuite> getCipherSuites() {
 		return Collections.unmodifiableList(cipherSuites);
 	}
 
+	/**
+	 * Checks, if collection of offered cipher suites contains "virtual" cipher
+	 * suite TLS_FALLBACK_SCSV
+	 *
+	 * @return true, if TLS_FALLBACK_SCSV is supported, false otherwise
+	 */
 	public boolean isTlsFallbackScsv() {
 		for (CipherSuite cipherSuite : cipherSuites) {
 			if (cipherSuite.getHex().equals(CipherSuiteRegister.TLS_FALLBACK_SCSV_HEX)) {
