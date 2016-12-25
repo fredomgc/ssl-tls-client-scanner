@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package cz.ondrejsmetak.tool;
 
 import cz.ondrejsmetak.entity.Hex;
@@ -12,13 +7,9 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 import javax.xml.bind.DatatypeConverter;
 import org.apache.commons.lang3.SystemUtils;
 
@@ -28,8 +19,18 @@ import org.apache.commons.lang3.SystemUtils;
  */
 public class Helper {
 
+	/**
+	 * Regex pattern, that is being used during testing a correct format of
+	 * hexadecimal value
+	 */
 	private static final Pattern isHex = Pattern.compile("^[0-9A-Fa-f]+$");
 
+	/**
+	 * Checks, if given port is available for (local) binding
+	 *
+	 * @param port given port, that will be tested
+	 * @return true, if given port is available, false otherwise
+	 */
 	public static boolean isLocalPortAvailable(int port) {
 		try {
 			// Try to open a LOCAL port with ServerSocket
@@ -85,6 +86,13 @@ public class Helper {
 		return input.equalsIgnoreCase("true") || input.equalsIgnoreCase("false");
 	}
 
+	/**
+	 * Parses boolean value in text form to <code>code.lang.Boolean</code>
+	 * object
+	 *
+	 * @param input
+	 * @return
+	 */
 	public static boolean parseBooleanStr(String input) {
 		return input.equalsIgnoreCase("true");
 	}
@@ -105,22 +113,52 @@ public class Helper {
 		return !sc.hasNext();
 	}
 
+	/**
+	 * Checks if the given string contains exactly valid integer value
+	 *
+	 * @param input text value, that will be tested
+	 * @return true if given value contains integer, false otherwise
+	 */
 	public static boolean isInteger(String input) {
 		return isInteger(input, 10);
 	}
 
+	/**
+	 * Parses the given text as a signed integer in the 16 radix
+	 *
+	 * @param hex hexadecimal value, that will be parsed
+	 * @return parsed value
+	 */
 	public static Integer hexToInt(String hex) {
 		return Integer.parseInt(hex.trim(), 16);
 	}
 
+	/**
+	 * Transform array of bytes to text representation
+	 *
+	 * @param array array of bytes
+	 * @return text representation
+	 */
 	public static String toHexString(byte[] array) {
 		return DatatypeConverter.printHexBinary(array);
 	}
 
-	public static byte[] toByteArray(String s) {
-		return DatatypeConverter.parseHexBinary(s);
+	/**
+	 * Transforms text value in the array of bytes
+	 *
+	 * @param string text representation
+	 * @return array of bytes
+	 */
+	public static byte[] toByteArray(String string) {
+		return DatatypeConverter.parseHexBinary(string);
 	}
 
+	/**
+	 * Transforms array of Bytes into array of bytes
+	 *
+	 * @param array array of Bytes
+	 * @return array of bytes
+	 */
 	public static byte[] byteToByte(Byte[] array) {
 		byte[] data = new byte[array.length];
 
@@ -131,6 +169,12 @@ public class Helper {
 		return data;
 	}
 
+	/**
+	 * Transforms array of bytes into array of Bytes
+	 *
+	 * @param array array of bytes
+	 * @return array of Bytes
+	 */
 	public static Byte[] byteToByte(byte[] array) {
 		Byte[] data = new Byte[array.length];
 
@@ -141,148 +185,110 @@ public class Helper {
 		return data;
 	}
 
+	/**
+	 * Transforms decimal value into hexadecimal
+	 *
+	 * @param decValue decimal value
+	 * @return hexadecimal value
+	 */
 	public static String decToHex(int decValue) {
 		return Integer.toHexString(decValue);
 	}
 
+	/**
+	 * Transform decimal value into binary
+	 *
+	 * @param decValue decimal value
+	 * @return binary value
+	 */
 	public static String decToBin(int decValue) {
 		return Integer.toBinaryString(decValue);
 	}
 
+	/**
+	 * Transforms hexadecimal value into decimal
+	 *
+	 * @param hexValue hexadecimal value
+	 * @return decimal value
+	 */
 	public static Integer hexToDec(String hexValue) {
 		return Integer.parseInt(hexValue, 16);
 	}
 
+	/**
+	 * Transforms hexadecimal value into decimal
+	 *
+	 * @param hexValue hexadecimal value
+	 * @return decimal value
+	 */
 	public static Integer hexToDec(Hex hexValue) {
 		return hexToDec(hexValue.toString());
 	}
 
+	/**
+	 * Transforms hexadecimal value into binary
+	 *
+	 * @param hexValue hexadecimal value
+	 * @return binary value
+	 */
 	public static String hexToBin(String hexValue) {
 		return decToBin(hexToDec(hexValue));
 	}
 
+	/**
+	 * Checks, if application is running on Windows
+	 *
+	 * @return true, if application is running on Windows, false otherwise
+	 */
 	public static boolean isWindows() {
 		return SystemUtils.IS_OS_WINDOWS;
 	}
 
+	/**
+	 * Checks, if application is running on Linux
+	 *
+	 * @return true, if application is running on Linux, false otherwise
+	 */
 	public static boolean isLinux() {
 		return SystemUtils.IS_OS_LINUX;
 	}
 
+	/**
+	 * Checks, if application is running on Mac OS X
+	 *
+	 * @return true, if application is running on Mac OS X, false otherwise
+	 */
 	public static boolean isMacOsx() {
 		return SystemUtils.IS_OS_MAC_OSX;
 	}
 
+	/**
+	 * Checks if text contains valid hexadecimal value
+	 *
+	 * @param value text value
+	 * @return true if text contains valid hexadecimal value, false otherwise
+	 */
 	public static boolean isHex(String value) {
 		return isHex.matcher(value).matches();
 	}
 
 	/**
-	 * Je sudé?
+	 * Is given number odd?
 	 *
-	 * @param number
-	 * @return
+	 * @param number number, that will be checked
+	 * @return true if given number is odd, false otherwise
 	 */
 	public static boolean isOdd(int number) {
 		return number % 2 == 0;
 	}
 
 	/**
-	 * Je liché?
+	 * Is given number even?
 	 *
-	 * @param number
-	 * @return
+	 * @param number number, that will be checked
+	 * @return true if given number is even, false otherwise
 	 */
 	public static boolean isEven(int number) {
 		return !isOdd(number);
 	}
-
-	//Default enabled Cipher Suites
-//	public static final String[] CIPHERS_A = new String[]{
-//		"TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384",
-//		"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384",
-//		"TLS_RSA_WITH_AES_256_CBC_SHA256",
-//		"TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384",
-//		"TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384",
-//		"TLS_DHE_RSA_WITH_AES_256_CBC_SHA256",
-//		"TLS_DHE_DSS_WITH_AES_256_CBC_SHA256",
-//		"TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA",
-//		"TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
-//		"TLS_RSA_WITH_AES_256_CBC_SHA",
-//		"TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA",
-//		"TLS_ECDH_RSA_WITH_AES_256_CBC_SHA",
-//		"TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
-//		"TLS_DHE_DSS_WITH_AES_256_CBC_SHA",
-//		"TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
-//		"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256",
-//		"TLS_RSA_WITH_AES_128_CBC_SHA256",
-//		"TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256",
-//		"TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256",
-//		"TLS_DHE_RSA_WITH_AES_128_CBC_SHA256",
-//		"TLS_DHE_DSS_WITH_AES_128_CBC_SHA256",
-//		"TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA",
-//		"TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
-//		"TLS_RSA_WITH_AES_128_CBC_SHA",
-//		"TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA",
-//		"TLS_ECDH_RSA_WITH_AES_128_CBC_SHA",
-//		"TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
-//		"TLS_DHE_DSS_WITH_AES_128_CBC_SHA",
-//		"TLS_ECDHE_ECDSA_WITH_RC4_128_SHA",
-//		"TLS_ECDHE_RSA_WITH_RC4_128_SHA",
-//		"SSL_RSA_WITH_RC4_128_SHA",
-//		"TLS_ECDH_ECDSA_WITH_RC4_128_SHA",
-//		"TLS_ECDH_RSA_WITH_RC4_128_SHA",
-//		"TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA",
-//		"TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA",
-//		"SSL_RSA_WITH_3DES_EDE_CBC_SHA",
-//		"TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA",
-//		"TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA",
-//		"SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA",
-//		"SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA",
-//		"SSL_RSA_WITH_RC4_128_MD5", //"TLS_EMPTY_RENEGOTIATION_INFO_SCSV2",
-//	};
-//
-//	//Default Disabled Cipher Suites
-//	public static final String[] CIPHERS_B = new String[]{"TLS_DH_anon_WITH_AES_256_CBC_SHA256",
-//		"TLS_ECDH_anon_WITH_AES_256_CBC_SHA",
-//		"TLS_DH_anon_WITH_AES_256_CBC_SHA",
-//		"TLS_DH_anon_WITH_AES_128_CBC_SHA256",
-//		"TLS_ECDH_anon_WITH_AES_128_CBC_SHA",
-//		"TLS_DH_anon_WITH_AES_128_CBC_SHA",
-//		"TLS_ECDH_anon_WITH_RC4_128_SHA",
-//		"SSL_DH_anon_WITH_RC4_128_MD5",
-//		"TLS_ECDH_anon_WITH_3DES_EDE_CBC_SHA",
-//		"SSL_DH_anon_WITH_3DES_EDE_CBC_SHA",
-//		"TLS_RSA_WITH_NULL_SHA256",
-//		"TLS_ECDHE_ECDSA_WITH_NULL_SHA",
-//		"TLS_ECDHE_RSA_WITH_NULL_SHA",
-//		"SSL_RSA_WITH_NULL_SHA",
-//		"TLS_ECDH_ECDSA_WITH_NULL_SHA",
-//		"TLS_ECDH_RSA_WITH_NULL_SHA",
-//		"TLS_ECDH_anon_WITH_NULL_SHA",
-//		"SSL_RSA_WITH_NULL_MD5",
-//		"SSL_RSA_WITH_DES_CBC_SHA",
-//		"SSL_DHE_RSA_WITH_DES_CBC_SHA",
-//		"SSL_DHE_DSS_WITH_DES_CBC_SHA",
-//		"SSL_DH_anon_WITH_DES_CBC_SHA",
-//		"SSL_RSA_EXPORT_WITH_RC4_40_MD5",
-//		"SSL_DH_anon_EXPORT_WITH_RC4_40_MD5",
-//		"SSL_RSA_EXPORT_WITH_DES40_CBC_SHA",
-//		"SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA",
-//		"SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA",
-//		"SSL_DH_anon_EXPORT_WITH_DES40_CBC_SHA",
-//		"TLS_KRB5_WITH_RC4_128_SHA",
-//		"TLS_KRB5_WITH_RC4_128_MD5",
-//		"TLS_KRB5_WITH_3DES_EDE_CBC_SHA",
-//		"TLS_KRB5_WITH_3DES_EDE_CBC_MD5",
-//		"TLS_KRB5_WITH_DES_CBC_SHA",
-//		"TLS_KRB5_WITH_DES_CBC_MD5",
-//		"TLS_KRB5_EXPORT_WITH_RC4_40_SHA",
-//		"TLS_KRB5_EXPORT_WITH_RC4_40_MD5",
-//		"TLS_KRB5_EXPORT_WITH_DES_CBC_40_SHA",
-//		"TLS_KRB5_EXPORT_WITH_DES_CBC_40_MD5",};
-//
-//	public static String[] getAllCiphers() {
-//		return Stream.concat(Arrays.stream(Helper.CIPHERS_A), Arrays.stream(Helper.CIPHERS_B)).toArray(String[]::new);
-//	}
 }

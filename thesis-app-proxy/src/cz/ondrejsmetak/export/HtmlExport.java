@@ -51,7 +51,7 @@ public class HtmlExport extends BaseExport {
 		String timestampOfStartStr = Helper.getFormattedDateTime(timestampOfStart, false);
 		String timestampOfEndStr = Helper.getFormattedDateTime(timestampOfEnd, false);
 
-		sb.append(String.format("<h1>SSL/TLS analysis <small>%s - %s</small></h1>", timestampOfStartStr, timestampOfEndStr));
+		sb.append(String.format("<h1>SSL/TLS analysis <small>%s to %s</small></h1>", timestampOfStartStr, timestampOfEndStr));
 		sb.append(doReport(messages));
 
 		String template = getTemplate();
