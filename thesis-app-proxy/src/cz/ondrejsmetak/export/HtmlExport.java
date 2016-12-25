@@ -68,6 +68,7 @@ public class HtmlExport extends BaseExport {
 	private String doReport(List<ReportMessage> messages) {
 		List<ReportMessage> protocol = new ArrayList<>();
 		List<ReportMessage> cipher = new ArrayList<>();
+		List<ReportMessage> other = new ArrayList<>();
 
 		for (ReportMessage reportMessage : messages) {
 			if (reportMessage.getCategory().equals(ReportMessage.Category.PROTOCOL)) {
@@ -77,6 +78,11 @@ public class HtmlExport extends BaseExport {
 			if (reportMessage.getCategory().equals(ReportMessage.Category.CIPHER)) {
 				cipher.add(reportMessage);
 			}
+			
+			if (reportMessage.getCategory().equals(ReportMessage.Category.OTHER)) {
+				other.add(reportMessage);
+			}
+			
 		}
 
 		StringBuilder sb = new StringBuilder();
@@ -85,6 +91,7 @@ public class HtmlExport extends BaseExport {
 		sb.append("<tbody>");
 		sb.append(doCreateTableSegment("Protocols", protocol));
 		sb.append(doCreateTableSegment("Cipher suites", cipher));
+		sb.append(doCreateTableSegment("Other", other));
 		sb.append("</tbody>");
 		sb.append("</table>");
 		return sb.toString();

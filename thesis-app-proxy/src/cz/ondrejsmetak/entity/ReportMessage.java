@@ -11,7 +11,7 @@ public class ReportMessage {
 	 * Category of message
 	 */
 	public enum Category {
-		PROTOCOL, VULNERABILITY, CERTIFICATE, CIPHER
+		PROTOCOL, OTHER, CERTIFICATE, CIPHER
 	}
 
 	/**

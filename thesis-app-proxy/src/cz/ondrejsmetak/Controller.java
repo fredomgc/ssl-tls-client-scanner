@@ -1,10 +1,15 @@
 package cz.ondrejsmetak;
 
+import cz.ondrejsmetak.entity.Mode;
+import cz.ondrejsmetak.entity.ReportMessage;
 import cz.ondrejsmetak.export.HtmlExport;
 import cz.ondrejsmetak.other.XmlParserException;
 import cz.ondrejsmetak.parser.ConfigurationParser;
 import cz.ondrejsmetak.tool.Log;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
@@ -126,13 +131,29 @@ public class Controller {
 	}
 
 	/**
+	 * Returns collection of report messages, that will be contained in HTML
+	 * export
+	 *
+	 * @return collection of report messages
+	 */
+	private List<ReportMessage> getReportMessages() {
+		if (!ReportRegister.getInstance().getReportMessages().isEmpty()) {
+			return ReportRegister.getInstance().getReportMessages();
+		}
+
+		ReportMessage rm = new ReportMessage("No SSL/TLS communication was recorded.", ReportMessage.Category.OTHER, new Mode(Mode.Type.MUST_BE), ReportMessage.Type.ERROR);
+		return new ArrayList<>(Arrays.asList(new ReportMessage[]{rm}));
+	}
+
+	/**
 	 * Executes HTML export
 	 *
 	 * @throws IOException in case of any error
 	 */
 	private void doHtmlExport() throws IOException {
+
 		HtmlExport export = new HtmlExport();
-		String path = export.export(ReportRegister.getInstance().getReportMessages(), timestampOfStart);
+		String path = export.export(getReportMessages(), timestampOfStart);
 
 		Log.infoln("Log saved in " + path);
 	}
