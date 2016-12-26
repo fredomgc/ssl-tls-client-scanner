@@ -107,8 +107,8 @@ public class ClientHello extends BaseEntity {
 	 * @return true, if array of bytes represents Client Hello, false otherwise
 	 */
 	public static boolean isClientHello(byte[] bytes) {
-		//we need at least 1 bytes to determine
-		if (bytes.length < 1) {
+		//we need at least 6 bytes to determine
+		if (bytes.length < 6) {
 			return false;
 		}
 

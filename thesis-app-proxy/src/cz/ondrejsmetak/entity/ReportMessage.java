@@ -40,7 +40,7 @@ public class ReportMessage {
 
 	/**
 	 * Creates new success message with given attributes
-	 * 
+	 *
 	 * @param message body of message
 	 * @param category category of message
 	 * @param requiredMode mode used to determine this message
@@ -54,7 +54,7 @@ public class ReportMessage {
 
 	/**
 	 * Creates new message with given attributes
-	 * 
+	 *
 	 * @param message body of message
 	 * @param category category of message
 	 * @param requiredMode mode used to determine this message
@@ -86,9 +86,14 @@ public class ReportMessage {
 
 	/**
 	 * Returs used mode in human readable form
+	 *
 	 * @return mode in human readable form
 	 */
 	public String getRequiredModeHuman() {
+		if(requiredMode == null){
+			return "-";
+		}
+		
 		if (requiredMode.isCanBe()) {
 			return "can be";
 		}

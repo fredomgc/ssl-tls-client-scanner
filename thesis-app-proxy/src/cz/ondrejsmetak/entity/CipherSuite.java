@@ -24,7 +24,7 @@ public class CipherSuite {
 	 * Mode, that will be used during analysis of Client Hello
 	 */
 	private Mode mode;
-
+	
 	/**
 	 * Creates a new cipher suite with the given parameters
 	 *

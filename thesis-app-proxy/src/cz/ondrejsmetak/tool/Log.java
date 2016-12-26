@@ -72,6 +72,7 @@ public class Log {
 	public static void debugException(Throwable exception) {
 		if (ConfigurationRegister.getInstance().isDebug()) {
 			System.out.println("DEBUG: " + exception.toString());
+			exception.printStackTrace();
 		}
 	}
 }

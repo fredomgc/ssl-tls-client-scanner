@@ -1,6 +1,7 @@
 package cz.ondrejsmetak;
 
 import cz.ondrejsmetak.entity.ClientHello;
+import cz.ondrejsmetak.entity.ReportClientHello;
 import cz.ondrejsmetak.scanner.ClientHelloScanner;
 import cz.ondrejsmetak.tool.Helper;
 import cz.ondrejsmetak.tool.Log;
@@ -9,6 +10,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.HttpRequest;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.littleshoot.proxy.HttpFilters;
 import org.littleshoot.proxy.HttpFiltersAdapter;
 import org.littleshoot.proxy.HttpFiltersSourceAdapter;
@@ -26,6 +28,8 @@ public class ProxyServer {
 	 * Instance of HTTP proxy server
 	 */
 	private HttpProxyServer server;
+
+	private AtomicInteger clientHelloCounter = new AtomicInteger(0);
 
 	/**
 	 * Checks, if configured port is available for binding
@@ -77,9 +81,11 @@ public class ProxyServer {
 			Log.infoln(String.format("Captured Client Hello from [%s], analysis started.", source));
 		}
 
+		int clientHelloId = this.clientHelloCounter.incrementAndGet();
+
 		ClientHello clientHello = new ClientHello(bytes);
 		ClientHelloScanner scanner = new ClientHelloScanner(clientHello);
-		ReportRegister.getInstance().addReportMessages(scanner.getReportMessages());
+		ReportRegister.getInstance().addReportClientHello(new ReportClientHello(clientHelloId, scanner.getReportMessages()));
 	}
 
 	/**

@@ -1,6 +1,7 @@
 package cz.ondrejsmetak;
 
 import cz.ondrejsmetak.entity.Mode;
+import cz.ondrejsmetak.entity.ReportClientHello;
 import cz.ondrejsmetak.entity.ReportMessage;
 import cz.ondrejsmetak.export.HtmlExport;
 import cz.ondrejsmetak.other.XmlParserException;
@@ -137,12 +138,34 @@ public class Controller {
 	 * @return collection of report messages
 	 */
 	private List<ReportMessage> getReportMessages() {
-		if (!ReportRegister.getInstance().getReportMessages().isEmpty()) {
-			return ReportRegister.getInstance().getReportMessages();
+		if (!ReportRegister.getInstance().getReportsClientHello().isEmpty()) {
+			return new ArrayList<>(); //nothing to report
 		}
 
 		ReportMessage rm = new ReportMessage("No SSL/TLS communication was recorded.", ReportMessage.Category.OTHER, new Mode(Mode.Type.MUST_BE), ReportMessage.Type.ERROR);
 		return new ArrayList<>(Arrays.asList(new ReportMessage[]{rm}));
+	}
+
+	/**
+	 * Returns collection of report Client Hello messages, that will be
+	 * contained in HTML export
+	 *
+	 * @return collection of report Client Hello messages
+	 */
+	private List<ReportClientHello> getReportClientHello() {
+		List<ReportClientHello> done = new ArrayList<>();
+
+		for (ReportClientHello report : ReportRegister.getInstance().getReportsClientHello()) {
+			if (!report.getReportMessages().isEmpty()) {
+				done.add(report);
+			} else {
+				ReportMessage safeMessage = new ReportMessage("All tests performed with the given configuration over captured Client Hello passed successfully.", ReportMessage.Category.OTHER, null, ReportMessage.Type.SUCCESS);
+				ReportClientHello safeReport = new ReportClientHello(report.getClientHelloId(), new ArrayList<>(Arrays.asList(new ReportMessage[]{safeMessage})));
+				done.add(safeReport);
+			}
+		}
+
+		return done;
 	}
 
 	/**
@@ -153,7 +176,7 @@ public class Controller {
 	private void doHtmlExport() throws IOException {
 
 		HtmlExport export = new HtmlExport();
-		String path = export.export(getReportMessages(), timestampOfStart);
+		String path = export.export(getReportMessages(), getReportClientHello(), timestampOfStart);
 
 		Log.infoln("Log saved in " + path);
 	}

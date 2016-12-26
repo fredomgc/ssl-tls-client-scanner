@@ -42,6 +42,7 @@ public class ClientHelloScanner extends BaseScanner {
 	 * @return
 	 */
 	public List<ReportMessage> getReportMessages() {
+
 		return reportMessages;
 	}
 
@@ -90,7 +91,7 @@ public class ClientHelloScanner extends BaseScanner {
 		if (mode.isCanBe()) {
 			//in this case, we don't care
 		} else if (mode.isMustBe() && !this.clientHello.isTlsFallbackScsv()) {
-			message = "TLS_FALLBACK_SCSV MUST BE supported, but this cipher suite IS supported!";
+			message = "TLS_FALLBACK_SCSV MUST BE supported, but this cipher suite IS NOT supported!";
 		} else if (mode.isMustNotBe() && this.clientHello.isTlsFallbackScsv()) {
 			message = "TLS_FALLBACK_SCSV MUST NOT BE supported, but this cipher suite IS supported!";
 		}

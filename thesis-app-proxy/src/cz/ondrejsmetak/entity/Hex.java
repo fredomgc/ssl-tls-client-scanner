@@ -127,6 +127,7 @@ public class Hex {
 	 * @return normalized user input
 	 */
 	private String normalizeInput(String input) {
+		input = input.toUpperCase();
 		input = input.replaceAll(",", "");
 		input = input.replaceAll("0x", "");
 		input = input.replaceAll(" ", "");

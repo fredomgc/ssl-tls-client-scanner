@@ -1,6 +1,7 @@
 package cz.ondrejsmetak.export;
 
 import cz.ondrejsmetak.ResourceManager;
+import cz.ondrejsmetak.entity.ReportClientHello;
 import cz.ondrejsmetak.entity.ReportMessage;
 import cz.ondrejsmetak.tool.Helper;
 import java.io.BufferedWriter;
@@ -46,13 +47,27 @@ public class HtmlExport extends BaseExport {
 	 * @return body of HTML file
 	 * @throws FileNotFoundException
 	 */
-	private String getContent(List<ReportMessage> messages, Date timestampOfStart, Date timestampOfEnd) throws FileNotFoundException {
+	private String getContent(List<ReportMessage> messages, List<ReportClientHello> reportClientHello, Date timestampOfStart, Date timestampOfEnd) throws FileNotFoundException {
 		StringBuilder sb = new StringBuilder();
 		String timestampOfStartStr = Helper.getFormattedDateTime(timestampOfStart, false);
 		String timestampOfEndStr = Helper.getFormattedDateTime(timestampOfEnd, false);
 
 		sb.append(String.format("<h1>SSL/TLS analysis <small>%s to %s</small></h1>", timestampOfStartStr, timestampOfEndStr));
-		sb.append(doReport(messages));
+
+		/**
+		 * General messages
+		 */
+		if (!messages.isEmpty()) {
+			sb.append(doReport(messages));
+		}
+
+		/**
+		 * Analysis of captured Client Hello(s)
+		 */
+		for (ReportClientHello report : reportClientHello) {
+			sb.append(String.format("<h2>Captured Client Hello #%s</h2>", report.getClientHelloId()));
+			sb.append(doReport(report.getReportMessages()));
+		}
 
 		String template = getTemplate();
 		template = template.replace(CONTENT_HOOK, sb.toString());
@@ -78,11 +93,11 @@ public class HtmlExport extends BaseExport {
 			if (reportMessage.getCategory().equals(ReportMessage.Category.CIPHER)) {
 				cipher.add(reportMessage);
 			}
-			
+
 			if (reportMessage.getCategory().equals(ReportMessage.Category.OTHER)) {
 				other.add(reportMessage);
 			}
-			
+
 		}
 
 		StringBuilder sb = new StringBuilder();
@@ -135,7 +150,7 @@ public class HtmlExport extends BaseExport {
 	 * @return css class
 	 */
 	private String typeToCssClass(ReportMessage message) {
-		if (message.getRequiredMode().isCanBe()) {
+		if (message.getRequiredMode() != null && message.getRequiredMode().isCanBe()) {
 			return "";
 		}
 
@@ -153,18 +168,19 @@ public class HtmlExport extends BaseExport {
 	/**
 	 * Exports collection of report messages to HTML file
 	 *
-	 * @param messages collection of report messages
+	 * @param generalMessages collection of general report messages
+	 * @param reportClientHello collection of reports (each report for single Client Hello)
 	 * @param timestampOfStart timestamp of moment, when proxy server started
 	 * @return path to newly created HTMl file
 	 * @throws IOException in case of any error
 	 */
-	public String export(List<ReportMessage> messages, Date timestampOfStart) throws IOException {
+	public String export(List<ReportMessage> generalMessages, List<ReportClientHello> reportClientHello, Date timestampOfStart) throws IOException {
 		Date timestampOfEnd = new Date();
 		String timestampOfEndStr = Helper.getFormattedDateTime(timestampOfEnd, true);
 
 		File target = new File(Helper.getWorkingDirectory() + File.separator + "report_" + timestampOfEndStr + ".htm");
 		try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(target.getAbsolutePath()), "utf-8"))) {
-			writer.write(getContent(messages, timestampOfStart, timestampOfEnd));
+			writer.write(getContent(generalMessages, reportClientHello, timestampOfStart, timestampOfEnd));
 			writer.flush();
 			writer.close();
 		}

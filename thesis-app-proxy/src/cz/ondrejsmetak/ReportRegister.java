@@ -1,5 +1,6 @@
 package cz.ondrejsmetak;
 
+import cz.ondrejsmetak.entity.ReportClientHello;
 import cz.ondrejsmetak.entity.ReportMessage;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,9 +19,9 @@ public class ReportRegister {
 	private static ReportRegister instance = null;
 
 	/**
-	 * Register of all messager
+	 * Collection of reports (each report for single captured Client Hello)
 	 */
-	private List<ReportMessage> register = new ArrayList<>();
+	private final List<ReportClientHello> clientHelloRegister = new ArrayList<>();
 
 	/**
 	 * Returns a instance of this class
@@ -34,21 +35,11 @@ public class ReportRegister {
 		return instance;
 	}
 
-	/**
-	 * Adds message to this register
-	 *
-	 * @param messages message, that will be added
-	 */
-	public void addReportMessages(Collection<ReportMessage> messages) {
-		register.addAll(messages);
+	public void addReportClientHello(ReportClientHello report) {
+		clientHelloRegister.add(report);
 	}
 
-	/**
-	 * Returns collection of all messages in this register
-	 *
-	 * @return collection of all messages
-	 */
-	public List<ReportMessage> getReportMessages() {
-		return register;
+	public List<ReportClientHello> getReportsClientHello() {
+		return clientHelloRegister;
 	}
 }
