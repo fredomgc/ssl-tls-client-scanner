@@ -328,7 +328,7 @@ public class ConfigurationParser extends BaseParser {
 		checkAttributesOfNode(node, ATTRIBUTE_NAME, ATTRIBUTE_HEX_VALUE, ATTRIBUTE_MODE);
 
 		Element element = (Element) node;
-		String name = element.getAttribute(ATTRIBUTE_HEX_VALUE);
+		String name = element.getAttribute(ATTRIBUTE_NAME);
 		String hexValue = element.getAttribute(ATTRIBUTE_HEX_VALUE);
 		checkHexValue(hexValue, 4);
 		Mode mode = parseMode(element.getAttribute(ATTRIBUTE_MODE), TAG_CIPHER_SUITE);
