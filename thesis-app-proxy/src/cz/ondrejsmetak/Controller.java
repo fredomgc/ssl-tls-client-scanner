@@ -96,9 +96,17 @@ public class Controller {
 	 * @return true, if transition was succesfull, false otherwise
 	 * @throws XmlParserException in case of any error
 	 */
-	private boolean startup() throws XmlParserException {
-		Log.infoln("Parsing " + ConfigurationParser.FILE + " for application configuration.");
+	private boolean startup() throws XmlParserException, IOException {
 		ConfigurationParser parser = new ConfigurationParser();
+
+		if (!parser.hasFile()) {
+			parser.createDefault();
+			Log.infoln("Creating default " + ConfigurationParser.FILE + " in application folder.");
+			Log.infoln("Please review configuration in XML file and run application again.");
+			return false;
+		}
+
+		Log.infoln("Parsing " + ConfigurationParser.FILE + " for application configuration.");
 		parser.parse();
 
 		List<String> missingDirectives = ConfigurationRegister.getInstance().getMissingDirectives();

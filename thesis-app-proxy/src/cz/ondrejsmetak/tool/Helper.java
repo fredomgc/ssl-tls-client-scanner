@@ -1,9 +1,12 @@
 package cz.ondrejsmetak.tool;
 
 import cz.ondrejsmetak.entity.Hex;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -74,6 +77,28 @@ public class Helper {
 	public static String getContentOfFile(File file) throws FileNotFoundException {
 		//http://stackoverflow.com/a/3403112
 		return new Scanner(file).useDelimiter("\\Z").next();
+	}
+
+	/**
+	 * Returns whole content of the given file input stream
+	 *
+	 * @param inputStream file input stream, that will be read
+	 * @return content of file
+	 */
+	public static String getContentOfFile(InputStream inputStream) {
+		StringBuilder sb = new StringBuilder();
+		try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+			String line;
+			while ((line = br.readLine()) != null) {
+				sb.append(line);
+			}
+		} catch (IOException ex) {
+			Log.debugException(ex);
+			return "";
+		}
+
+		return sb.toString();
 	}
 
 	/**
