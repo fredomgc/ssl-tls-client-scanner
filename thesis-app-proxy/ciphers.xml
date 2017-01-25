@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- based on https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.1.0/com.ibm.zos.v2r1.gska100/csdcwh.htm -->
 <cipherSuites>
-	
 	<cipherSuite hexValue="0000" name="TLS_NULL_WITH_NULL_NULL" />
 	<cipherSuite hexValue="0001" name="TLS_NULL_WITH_NULL_MD5" />
 	<cipherSuite hexValue="0002" name="TLS_RSA_WITH_NULL_SHA" />
@@ -86,4 +84,6 @@
 	<cipherSuite hexValue="C030" name="TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384" />
 	<cipherSuite hexValue="C031" name="TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256" />
 	<cipherSuite hexValue="C032" name="TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384" />
+	<cipherSuite hexValue="cca9" name="TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256" />
+	<cipherSuite hexValue="cca8" name="TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256" />
 </cipherSuites>

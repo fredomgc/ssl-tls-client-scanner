@@ -1,61 +1,7 @@
-2017-01-23 07:43:18,994 INFO  [main] impl.DefaultHttpProxyServer (DefaultHttpProxyServer.java:459).start() - Starting proxy at address: /127.0.0.1:6880
-2017-01-23 07:43:19,039 INFO  [main] impl.DefaultHttpProxyServer (DefaultHttpProxyServer.java:488).doStart() - Proxy listening with TCP transport
-2017-01-23 07:43:19,160 INFO  [main] impl.DefaultHttpProxyServer (DefaultHttpProxyServer.java:523).doStart() - Proxy started at address: /127.0.0.1:6880
-2017-01-23 07:48:40,877 INFO  [LittleProxy-0-ProxyToServerWorker-7] impl.ProxyToServerConnection (ProxyToServerConnection.java:791).connectionFailed() - (CONNECTING) [id: 0x47feb3f4]: Connection to upstream server failed
-io.netty.channel.ConnectTimeoutException: connection timed out: /192.168.0.20:80
-	at io.netty.channel.nio.AbstractNioChannel$AbstractNioUnsafe$1.run(AbstractNioChannel.java:220)
-	at io.netty.util.concurrent.PromiseTask$RunnableAdapter.call(PromiseTask.java:38)
-	at io.netty.util.concurrent.ScheduledFutureTask.run(ScheduledFutureTask.java:120)
-	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:358)
-	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:374)
-	at io.netty.util.concurrent.SingleThreadEventExecutor$2.run(SingleThreadEventExecutor.java:112)
-	at java.lang.Thread.run(Thread.java:745)
-2017-01-23 10:18:44,638 INFO  [LittleProxy-0-ProxyToServerWorker-7] impl.ProxyToServerConnection (ProxyToServerConnection.java:791).connectionFailed() - (CONNECTING) [id: 0xa76afa6b]: Connection to upstream server failed
-java.net.ConnectException: Spojení odmítnuto: hilly.smartgis.cz/178.17.92.131:80
-	at sun.nio.ch.SocketChannelImpl.checkConnect(Native Method)
-	at sun.nio.ch.SocketChannelImpl.finishConnect(SocketChannelImpl.java:717)
-	at io.netty.channel.socket.nio.NioSocketChannel.doFinishConnect(NioSocketChannel.java:224)
-	at io.netty.channel.nio.AbstractNioChannel$AbstractNioUnsafe.finishConnect(AbstractNioChannel.java:289)
-	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:545)
-	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:485)
-	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:399)
-	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:371)
-	at io.netty.util.concurrent.SingleThreadEventExecutor$2.run(SingleThreadEventExecutor.java:112)
-	at java.lang.Thread.run(Thread.java:745)
-2017-01-23 10:19:05,038 INFO  [LittleProxy-0-ProxyToServerWorker-0] impl.ProxyToServerConnection (ProxyToServerConnection.java:791).connectionFailed() - (CONNECTING) [id: 0x3b189777]: Connection to upstream server failed
-java.net.ConnectException: Spojení odmítnuto: hilly.smartgis.cz/178.17.92.131:80
-	at sun.nio.ch.SocketChannelImpl.checkConnect(Native Method)
-	at sun.nio.ch.SocketChannelImpl.finishConnect(SocketChannelImpl.java:717)
-	at io.netty.channel.socket.nio.NioSocketChannel.doFinishConnect(NioSocketChannel.java:224)
-	at io.netty.channel.nio.AbstractNioChannel$AbstractNioUnsafe.finishConnect(AbstractNioChannel.java:289)
-	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:545)
-	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:485)
-	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:399)
-	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:371)
-	at io.netty.util.concurrent.SingleThreadEventExecutor$2.run(SingleThreadEventExecutor.java:112)
-	at java.lang.Thread.run(Thread.java:745)
-2017-01-23 10:19:05,046 INFO  [LittleProxy-0-ProxyToServerWorker-1] impl.ProxyToServerConnection (ProxyToServerConnection.java:791).connectionFailed() - (CONNECTING) [id: 0xbe59284a]: Connection to upstream server failed
-java.net.ConnectException: Spojení odmítnuto: hilly.smartgis.cz/178.17.92.131:80
-	at sun.nio.ch.SocketChannelImpl.checkConnect(Native Method)
-	at sun.nio.ch.SocketChannelImpl.finishConnect(SocketChannelImpl.java:717)
-	at io.netty.channel.socket.nio.NioSocketChannel.doFinishConnect(NioSocketChannel.java:224)
-	at io.netty.channel.nio.AbstractNioChannel$AbstractNioUnsafe.finishConnect(AbstractNioChannel.java:289)
-	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:545)
-	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:485)
-	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:399)
-	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:371)
-	at io.netty.util.concurrent.SingleThreadEventExecutor$2.run(SingleThreadEventExecutor.java:112)
-	at java.lang.Thread.run(Thread.java:745)
-2017-01-23 10:19:31,763 INFO  [LittleProxy-0-ClientToProxyWorker-2] impl.ClientToProxyConnection (ClientToProxyConnection.java:730).exceptionCaught() - (AWAITING_INITIAL) [id: 0xf2fb17c7, L:/127.0.0.1:6880 - R:/127.0.0.1:50886]: An IOException occurred on ClientToProxyConnection: Spojení zrušeno druhou stranou
-2017-01-23 10:19:37,484 INFO  [LittleProxy-0-ClientToProxyWorker-6] impl.ClientToProxyConnection (ClientToProxyConnection.java:730).exceptionCaught() - (AWAITING_INITIAL) [id: 0x2ec2ce2f, L:/127.0.0.1:6880 - R:/127.0.0.1:50908]: An IOException occurred on ClientToProxyConnection: Spojení zrušeno druhou stranou
-2017-01-23 10:19:44,592 INFO  [LittleProxy-0-ClientToProxyWorker-7] impl.ClientToProxyConnection (ClientToProxyConnection.java:730).exceptionCaught() - (AWAITING_INITIAL) [id: 0x0881bc35, L:/127.0.0.1:6880 - R:/127.0.0.1:50918]: An IOException occurred on ClientToProxyConnection: Spojení zrušeno druhou stranou
-2017-01-23 10:19:53,309 INFO  [LittleProxy-0-ClientToProxyWorker-3] impl.ClientToProxyConnection (ClientToProxyConnection.java:730).exceptionCaught() - (AWAITING_INITIAL) [id: 0xef8676b1, L:/127.0.0.1:6880 - R:/127.0.0.1:50890]: An IOException occurred on ClientToProxyConnection: Spojení zrušeno druhou stranou
-2017-01-23 10:19:53,601 INFO  [LittleProxy-0-ClientToProxyWorker-3] impl.ClientToProxyConnection (ClientToProxyConnection.java:730).exceptionCaught() - (AWAITING_INITIAL) [id: 0xc6847d9d, L:/127.0.0.1:6880 - R:/127.0.0.1:50942]: An IOException occurred on ClientToProxyConnection: Spojení zrušeno druhou stranou
-2017-01-23 10:19:57,871 INFO  [LittleProxy-0-ClientToProxyWorker-2] impl.ClientToProxyConnection (ClientToProxyConnection.java:730).exceptionCaught() - (AWAITING_INITIAL) [id: 0x7f61c6ee, L:/127.0.0.1:6880 - R:/127.0.0.1:50938]: An IOException occurred on ClientToProxyConnection: Spojení zrušeno druhou stranou
-2017-01-23 10:19:58,629 INFO  [LittleProxy-0-ClientToProxyWorker-7] impl.ClientToProxyConnection (ClientToProxyConnection.java:730).exceptionCaught() - (AWAITING_INITIAL) [id: 0x05541d5c, L:/127.0.0.1:6880 - R:/127.0.0.1:50960]: An IOException occurred on ClientToProxyConnection: Spojení zrušeno druhou stranou
-2017-01-23 10:19:58,637 INFO  [LittleProxy-0-ClientToProxyWorker-6] impl.ClientToProxyConnection (ClientToProxyConnection.java:730).exceptionCaught() - (AWAITING_INITIAL) [id: 0x3ca311ff, L:/127.0.0.1:6880 - R:/127.0.0.1:50956]: An IOException occurred on ClientToProxyConnection: Spojení zrušeno druhou stranou
-2017-01-23 10:20:00,515 INFO  [LittleProxy-0-ClientToProxyWorker-5] impl.ClientToProxyConnection (ClientToProxyConnection.java:730).exceptionCaught() - (AWAITING_INITIAL) [id: 0x40211efa, L:/127.0.0.1:6880 - R:/127.0.0.1:50950]: An IOException occurred on ClientToProxyConnection: Spojení zrušeno druhou stranou
-2017-01-23 18:06:45,661 INFO  [LittleProxy-JVM-shutdown-hook] impl.DefaultHttpProxyServer (DefaultHttpProxyServer.java:400).doStop() - Shutting down proxy server immediately (non-graceful)
-2017-01-23 18:06:45,676 INFO  [LittleProxy-JVM-shutdown-hook] impl.DefaultHttpProxyServer (DefaultHttpProxyServer.java:433).closeAllChannels() - Closing all channels (non-graceful)
-2017-01-23 18:06:45,730 INFO  [LittleProxy-JVM-shutdown-hook] impl.ServerGroup (ServerGroup.java:212).shutdown() - Shutting down server group event loops (non-graceful)
-2017-01-23 18:06:45,741 INFO  [LittleProxy-JVM-shutdown-hook] impl.DefaultHttpProxyServer (DefaultHttpProxyServer.java:414).doStop() - Done shutting down proxy server
+2017-01-25 09:26:32,294 INFO  [main] impl.DefaultHttpProxyServer (DefaultHttpProxyServer.java:459).start() - Starting proxy at address: /127.0.0.1:6880
+2017-01-25 09:26:32,326 INFO  [main] impl.DefaultHttpProxyServer (DefaultHttpProxyServer.java:488).doStart() - Proxy listening with TCP transport
+2017-01-25 09:26:32,404 INFO  [main] impl.DefaultHttpProxyServer (DefaultHttpProxyServer.java:523).doStart() - Proxy started at address: /127.0.0.1:6880
+2017-01-25 09:26:37,533 INFO  [main] impl.DefaultHttpProxyServer (DefaultHttpProxyServer.java:398).doStop() - Shutting down proxy server gracefully
+2017-01-25 09:26:37,533 INFO  [main] impl.DefaultHttpProxyServer (DefaultHttpProxyServer.java:433).closeAllChannels() - Closing all channels (graceful)
+2017-01-25 09:26:37,544 INFO  [main] impl.ServerGroup (ServerGroup.java:212).shutdown() - Shutting down server group event loops (graceful)
+2017-01-25 09:26:39,760 INFO  [main] impl.DefaultHttpProxyServer (DefaultHttpProxyServer.java:414).doStop() - Done shutting down proxy server

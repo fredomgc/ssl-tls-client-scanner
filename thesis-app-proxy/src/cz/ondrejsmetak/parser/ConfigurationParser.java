@@ -44,7 +44,6 @@ public class ConfigurationParser extends BaseParser {
 	private static final String TAG_CIPHER_SUITES = "cipherSuites";
 	private static final String TAG_CIPHER_SUITE = "cipherSuite";
 
-	private static final String ATTRIBUTE_HEX_VALUE = "hexValue";
 	private static final String ATTRIBUTE_NAME = "name";
 	private static final String ATTRIBUTE_VALUE = "value";
 	private static final String ATTRIBUTE_MODE = "mode";
@@ -102,15 +101,15 @@ public class ConfigurationParser extends BaseParser {
 		/**
 		 * Tag "tlsFallbackScsv" must have "mode" atribute
 		 */
-		if (node.getNodeName().equals(TAG_CIPHER_SUITE)) {
-			checkAttributesOfNode(node, ATTRIBUTE_NAME, ATTRIBUTE_HEX_VALUE, ATTRIBUTE_MODE);
+		if (node.getNodeName().equals(TAG_TLS_FALLBACK_SCSV)) {
+			checkAttributesOfNode(node, ATTRIBUTE_MODE);
 		}
 
 		/**
-		 * Tag "cipherSuite" must have "hexValue", "name" and "mode" atribute
+		 * Tag "cipherSuite" must have "name" and "mode" atribute
 		 */
 		if (node.getNodeName().equals(TAG_CIPHER_SUITE)) {
-			checkAttributesOfNode(node, ATTRIBUTE_HEX_VALUE, ATTRIBUTE_NAME, ATTRIBUTE_MODE);
+			checkAttributesOfNode(node, ATTRIBUTE_NAME, ATTRIBUTE_MODE);
 		}
 	}
 
@@ -325,42 +324,13 @@ public class ConfigurationParser extends BaseParser {
 		if (!(node instanceof Element)) {
 			return;
 		}
-		checkAttributesOfNode(node, ATTRIBUTE_NAME, ATTRIBUTE_HEX_VALUE, ATTRIBUTE_MODE);
+		checkAttributesOfNode(node, ATTRIBUTE_NAME, ATTRIBUTE_MODE);
 
 		Element element = (Element) node;
 		String name = element.getAttribute(ATTRIBUTE_NAME);
-		String hexValue = element.getAttribute(ATTRIBUTE_HEX_VALUE);
-		checkHexValue(hexValue, 4);
 		Mode mode = parseMode(element.getAttribute(ATTRIBUTE_MODE), TAG_CIPHER_SUITE);
-
-		CipherSuite cipherSuite = new CipherSuite(hexValue, name, mode);
-		if (cipherSuite.getHex().equals(CipherSuiteRegister.TLS_FALLBACK_SCSV_HEX)) {
-			throw new XmlParserException("Cipher suite TLS_FALLBACK_SCSV is supported by directive \"tlsFallbackScsv\". "
-					+ "Please, remove this cipher suite from \"cipherSuites\" section!", cipherSuite);
-		}
-
-		if (CipherSuiteRegister.getInstance().containsCipherSuite(cipherSuite)) {
-			throw new XmlParserException("Cipher suite [%s] is already present!", cipherSuite);
-		}
-
-		CipherSuiteRegister.getInstance().addCipherSuite(cipherSuite);
+		
+		CipherSuiteRegister.getInstance().setModeForCipherSuite(name, mode);
 	}
 
-	/**
-	 * Check if given value is in valid hexadecimal with expected digits count
-	 *
-	 * @param value
-	 * @param size
-	 * @throws XmlParserException
-	 */
-	private void checkHexValue(String value, int digits) throws XmlParserException {
-		if (!Helper.isHex(value)) {
-			throw new XmlParserException("Value [%s] isn't valid hexadecimal value!", value);
-		}
-
-		if (value.length() != digits) {
-			throw new XmlParserException("Value [%s] must have exactly [%s] digit(s)!", value, digits);
-		}
-
-	}
 }

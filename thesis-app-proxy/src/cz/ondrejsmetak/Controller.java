@@ -5,6 +5,7 @@ import cz.ondrejsmetak.entity.ReportClientHello;
 import cz.ondrejsmetak.entity.ReportMessage;
 import cz.ondrejsmetak.export.HtmlExport;
 import cz.ondrejsmetak.other.XmlParserException;
+import cz.ondrejsmetak.parser.CipherParser;
 import cz.ondrejsmetak.parser.ConfigurationParser;
 import cz.ondrejsmetak.tool.Log;
 import java.io.IOException;
@@ -97,17 +98,32 @@ public class Controller {
 	 * @throws XmlParserException in case of any error
 	 */
 	private boolean startup() throws XmlParserException, IOException {
-		ConfigurationParser parser = new ConfigurationParser();
+		ConfigurationParser configurationParser = new ConfigurationParser();
+		CipherParser cipherParser = new CipherParser();
 
-		if (!parser.hasFile()) {
-			parser.createDefault();
+		boolean stop = false;
+		if (!cipherParser.hasFile()) {
+			cipherParser.createDefault();
+			Log.infoln("Creating default " + CipherParser.FILE + " in application folder.");
+			stop = true;
+		}
+
+		if (!configurationParser.hasFile()) {
+			configurationParser.createDefault();
 			Log.infoln("Creating default " + ConfigurationParser.FILE + " in application folder.");
 			Log.infoln("Please review configuration in XML file and run application again.");
+			stop = true;
+		}
+
+		if (stop) {
 			return false;
 		}
 
+		Log.infoln("Parsing " + CipherParser.FILE + " for supported cipher suites.");
+		cipherParser.parse();
+
 		Log.infoln("Parsing " + ConfigurationParser.FILE + " for application configuration.");
-		parser.parse();
+		configurationParser.parse();
 
 		List<String> missingDirectives = ConfigurationRegister.getInstance().getMissingDirectives();
 		if (!missingDirectives.isEmpty()) {

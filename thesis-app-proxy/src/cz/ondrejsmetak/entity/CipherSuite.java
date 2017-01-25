@@ -63,6 +63,10 @@ public class CipherSuite {
 		return mode;
 	}
 
+	public void setMode(Mode mode) {
+		this.mode = mode;
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();

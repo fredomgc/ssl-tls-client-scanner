@@ -68,6 +68,21 @@ public class CipherSuiteRegister {
 		return register.keySet().contains(cipherSuite.getHex());
 	}
 
+	public boolean containsCipherSuite(String nameOfCipherSuite) {
+		return getByName(nameOfCipherSuite) != null;
+	}
+
+	public void setModeForCipherSuite(String nameOfCipherSuite, Mode mode) {
+		CipherSuite cipherSuite = getByName(nameOfCipherSuite);
+		if (cipherSuite == null) {
+			throw new IllegalArgumentException(String.format("Unknown cipher suite [%s]!", nameOfCipherSuite));
+		}
+
+		//update cipher suite
+		cipherSuite.setMode(mode);
+		register.put(cipherSuite.getHex(), cipherSuite);
+	}
+
 	/**
 	 * Returns size (count of records) of this register
 	 *
@@ -110,4 +125,15 @@ public class CipherSuiteRegister {
 		addCipherSuite(unknown);
 		return unknown;
 	}
+
+	public CipherSuite getByName(String cipherSuiteName) {
+		for (CipherSuite cipherSuite : getCipherSuites()) {
+			if (cipherSuite.getName().equals(cipherSuiteName)) {
+				return cipherSuite;
+			}
+		}
+
+		return null;
+	}
+
 }
