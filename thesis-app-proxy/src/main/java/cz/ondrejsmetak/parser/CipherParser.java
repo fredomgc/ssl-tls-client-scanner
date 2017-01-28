@@ -45,7 +45,7 @@ public class CipherParser extends BaseParser {
 
 	@Override
 	public boolean hasFile() {
-		return Files.exists(new File(FILE).toPath());
+		return true; //always true, because file is part of resources
 	}
 
 	private void checkNode(Node node) throws XmlParserException {
@@ -67,10 +67,9 @@ public class CipherParser extends BaseParser {
 
 	public void parse() throws XmlParserException {
 		try {
-			File fXmlFile = new File(FILE);
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			DocumentBuilder db = dbf.newDocumentBuilder();
-			Document doc = db.parse(fXmlFile);
+			Document doc = db.parse(ResourceManager.getCiphersConfigurationXml());
 			doc.getDocumentElement().normalize();
 
 			NodeList tags = doc.getElementsByTagName("*");
@@ -79,8 +78,6 @@ public class CipherParser extends BaseParser {
 			if (cipherSuites.getLength() != 1 || !(cipherSuites.item(0) instanceof Element)) {
 				throw new XmlParserException(String.format("Tag [%s] must be specified exatly once.", TAG_CIPHER_SUITES));
 			}
-
-			Element configuration = (Element) cipherSuites.item(0);
 
 			/**
 			 * Parse cipher suites and store them

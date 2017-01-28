@@ -102,11 +102,6 @@ public class Controller {
 		CipherParser cipherParser = new CipherParser();
 
 		boolean stop = false;
-		if (!cipherParser.hasFile()) {
-			cipherParser.createDefault();
-			Log.infoln("Creating default " + CipherParser.FILE + " in application folder.");
-			stop = true;
-		}
 
 		if (!configurationParser.hasFile()) {
 			configurationParser.createDefault();
@@ -119,7 +114,6 @@ public class Controller {
 			return false;
 		}
 
-		Log.infoln("Parsing " + CipherParser.FILE + " for supported cipher suites.");
 		cipherParser.parse();
 
 		Log.infoln("Parsing " + ConfigurationParser.FILE + " for application configuration.");

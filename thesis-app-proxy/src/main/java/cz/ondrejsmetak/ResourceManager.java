@@ -19,6 +19,16 @@ public class ResourceManager {
 	}
 
 	/**
+	 * Return file, that contains all cipher suites recognized by this
+	 * application
+	 *
+	 * @return file containing cipher suites
+	 */
+	public static InputStream getCiphersConfigurationXml() {
+		return getResourceAsStream("ciphers.xml");
+	}
+
+	/**
 	 * Return file, that is used as template during generating HTML report
 	 *
 	 * @return file used as template during generating HTML report
