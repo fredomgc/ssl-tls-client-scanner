@@ -5,64 +5,176 @@ import cz.ondrejsmetak.entity.ReportClientHello;
 import cz.ondrejsmetak.scanner.ClientHelloScanner;
 import cz.ondrejsmetak.tool.Helper;
 import cz.ondrejsmetak.tool.Log;
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.http.HttpRequest;
+import java.io.*;
+import java.net.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.littleshoot.proxy.HttpFilters;
-import org.littleshoot.proxy.HttpFiltersAdapter;
-import org.littleshoot.proxy.HttpFiltersSourceAdapter;
-import org.littleshoot.proxy.HttpProxyServer;
-import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * Proxy server for SSL/TLS communication
  *
  * @author Ondřej Směták <posta@ondrejsmetak.cz>
  */
 public class ProxyServer {
 
 	/**
-	 * Instance of HTTP proxy server
+	 * Connection on the local port
 	 */
-	private HttpProxyServer server;
+	private Socket client = null;
 
+	/**
+	 * Connection to the remote server on the given remote port
+	 */
+	private Socket server = null;
+
+	/**
+	 * ServerSocket that is listening for connections on local port
+	 */
+	private ServerSocket serverSocket;
+
+	/**
+	 * Main thread used to run this ProxyServer
+	 */
+	private Thread mainThred;
+
+	/**
+	 * Is this ProxyServer running
+	 */
+	private static boolean running = true;
+
+	/**
+	 * Used to count captued Client Hello packets
+	 */
 	private AtomicInteger clientHelloCounter = new AtomicInteger(0);
 
-	/**
-	 * Checks, if configured port is available for binding
-	 *
-	 * @return true if port is available, false otherwise
-	 */
-	public static boolean checkPort() {
-		int localPort = ConfigurationRegister.getInstance().getPort();
-
-		if (!Helper.isLocalPortAvailable(localPort)) {
-			Log.errorln(String.format("Port [%s] is already being used. Please specify different port.", localPort));
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
-	 * Starts proxy server
-	 */
 	public void run() {
-		server = DefaultHttpProxyServer.bootstrap()
-				.withPort(ConfigurationRegister.getInstance().getPort())
-				.withFiltersSource(new MyHttpFiltersSourceAdapter())
-				.start();
+		Runnable r = () -> {
+			try {
+				doRun();
+			} catch (IOException ex) {
+				Log.debugException(ex);
+			}
+		};
+
+		mainThred = new Thread(r);
+		mainThred.start();
 	}
 
-	/**
-	 * Stops proxy server
-	 */
+	private void doRun() throws IOException {
+		int localPort = ConfigurationRegister.getInstance().getLocalPort();
+		int remotePort = ConfigurationRegister.getInstance().getRemotePort();
+		String remoteHost = ConfigurationRegister.getInstance().getRemoteHost();
+
+		serverSocket = new ServerSocket(localPort);
+
+		final byte[] request = new byte[1024];
+		byte[] reply = new byte[4096];
+
+		while (running) {
+			try {
+				// Wait for a connection on the local port
+				client = serverSocket.accept();
+
+				final InputStream streamFromClient = client.getInputStream();
+				final OutputStream streamToClient = client.getOutputStream();
+
+				// Make a connection to the real server.
+				// If we cannot connect to the server, send an error to the
+				// client, disconnect, and continue waiting for connections.
+				try {
+					server = new Socket(remoteHost, remotePort);
+				} catch (IOException ex) {
+					Log.debugException(ex);
+					client.close();
+					continue;
+				}
+
+				// Get server streams.
+				final InputStream streamFromServer = server.getInputStream();
+				final OutputStream streamToServer = server.getOutputStream();
+
+				// a thread to read the client's requests and pass them
+				// to the server. A separate thread for asynchronous.
+				Thread t = new Thread() {
+					public void run() {
+						int bytesRead;
+						try {
+							while ((bytesRead = streamFromClient.read(request)) != -1) {
+								hijackStreamFromClient(request, server.getLocalSocketAddress().toString().replaceAll("/", ""));
+								streamToServer.write(request, 0, bytesRead);
+								streamToServer.flush();
+							}
+						} catch (IOException ex) {
+							Log.debugException(ex);
+						}
+
+						// the client closed the connection to us, so close our
+						// connection to the server.
+						try {
+							streamToServer.close();
+						} catch (IOException ex) {
+							Log.debugException(ex);
+						}
+					}
+				};
+
+				// Start the client-to-server request thread running
+				t.start();
+
+				// Read the server's responses
+				// and pass them back to the client.
+				int bytesRead;
+				try {
+					while ((bytesRead = streamFromServer.read(reply)) != -1) {
+						streamToClient.write(reply, 0, bytesRead);
+						streamToClient.flush();
+					}
+				} catch (IOException ex) {
+					Log.debugException(ex);
+				}
+
+				// The server closed its connection to us, so we close our
+				// connection to our client.
+				streamToClient.close();
+			} catch (IOException ex) {
+				Log.debugException(ex);
+			} finally {
+				try {
+					if (server != null) {
+						server.close();
+					}
+					if (client != null) {
+						client.close();
+					}
+				} catch (IOException ex) {
+					Log.debugException(ex);
+				}
+			}
+		}
+	}
+
+	private void hijackStreamFromClient(byte[] request, String source) {
+		handleClientHello(request, source);
+	}
+
 	public void stop() {
-		if (server != null) {
-			server.stop();
+		try {
+			running = false;
+
+			if (serverSocket != null) {
+				serverSocket.close();
+			}
+
+			if (server != null) {
+				server.close();
+			}
+
+			if (client != null) {
+				client.close();
+			}
+
+		} catch (IOException ex) {
+			Log.debugException(ex);
 		}
 	}
 
@@ -89,55 +201,19 @@ public class ProxyServer {
 	}
 
 	/**
-	 * Custom HTTP filter for proxy server
+	 * Checks, if configured port is available for binding
+	 *
+	 * @return true if port is available, false otherwise
 	 */
-	private class MyHttpFiltersSourceAdapter extends HttpFiltersSourceAdapter {
+	public static boolean checkPort() {
+		int localPort = ConfigurationRegister.getInstance().getLocalPort();
 
-		@Override
-		public HttpFilters filterRequest(HttpRequest originalRequest, ChannelHandlerContext ctx) {
-
-			/**
-			 * Add our custom adapter on first position. That means, that our
-			 * code will be run first, then anything else. We don't modify sent
-			 * data in any way, we "just" read them
-			 */
-			ctx.pipeline().addFirst(new ChannelInboundHandlerAdapter() {
-				@Override
-				public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-					ByteBuf buf = (ByteBuf) msg;
-
-					/**
-					 * Captured bytes
-					 */
-					byte[] bytes = new byte[buf.readableBytes()];
-					int readerIndex = buf.readerIndex();
-					buf.getBytes(readerIndex, bytes);
-
-					/**
-					 * Source of communication
-					 */
-					Channel ch = ctx.channel();
-					String peerHost = ((java.net.InetSocketAddress) ch.remoteAddress()).getAddress().getHostAddress();
-
-					/**
-					 * If this is ClientHello, run scan
-					 */
-					handleClientHello(bytes, peerHost);
-
-					/**
-					 * Call super method
-					 */
-					super.channelRead(ctx, msg);
-				}
-			});
-
-			/**
-			 * This object must be returned
-			 */
-			return new HttpFiltersAdapter(originalRequest) {
-				/*Empty code, because in fact, we don't want any filtering*/
-			};
+		if (!Helper.isLocalPortAvailable(localPort)) {
+			Log.errorln(String.format("Port [%s] is already being used. Please specify different port.", localPort));
+			return false;
 		}
+
+		return true;
 	}
 
 }

@@ -257,7 +257,9 @@ public class ConfigurationParser extends BaseParser {
 	 */
 	private void setDirective(String name, String value) throws XmlParserException {
 		setDebug(name, value);
-		setPort(name, value);
+		setLocalPort(name, value);
+		setRemotePort(name, value);
+		setRemoteHost(name, value);
 	}
 
 	/**
@@ -284,17 +286,35 @@ public class ConfigurationParser extends BaseParser {
 	 * @param value value of directive
 	 * @throws XmlParserException if given value has unsupported format
 	 */
-	private void setPort(String name, String value) throws XmlParserException {
-		if (name.equalsIgnoreCase(ConfigurationRegister.PORT)) {
-			if (!Helper.isInteger(value)) {
-				throw new XmlParserException("Value for directive " + ConfigurationRegister.PORT + " must be integer value!");
-			}
-			Integer port = Integer.parseInt(value);
-			if (!((port >= 1 && port <= 65535))) {
-				throw new XmlParserException("Value for directive " + ConfigurationRegister.PORT + " must be in range [1 - 65535]!");
-			}
+	private void setLocalPort(String name, String value) throws XmlParserException {
+		if (name.equalsIgnoreCase(ConfigurationRegister.LOCAL_PORT)) {
+			checkPort(value, ConfigurationRegister.LOCAL_PORT);
 
-			ConfigurationRegister.getInstance().setPort(port);
+			ConfigurationRegister.getInstance().setLocalPort(Integer.parseInt(value));
+		}
+	}
+
+	private void setRemotePort(String name, String value) throws XmlParserException {
+		if (name.equalsIgnoreCase(ConfigurationRegister.REMOTE_PORT)) {
+			checkPort(value, ConfigurationRegister.REMOTE_PORT);
+
+			ConfigurationRegister.getInstance().setRemotePort(Integer.parseInt(value));
+		}
+	}
+
+	private void checkPort(String value, String directiveName) throws XmlParserException {
+		if (!Helper.isInteger(value)) {
+			throw new XmlParserException("Value for directive " + directiveName + " must be integer value!");
+		}
+		Integer port = Integer.parseInt(value);
+		if (!((port >= 1 && port <= 65535))) {
+			throw new XmlParserException("Value for directive " + directiveName + " must be in range [1 - 65535]!");
+		}
+	}
+
+	private void setRemoteHost(String name, String value) throws XmlParserException {
+		if (name.equalsIgnoreCase(ConfigurationRegister.REMOTE_HOST)) {
+			ConfigurationRegister.getInstance().setRemoteHost(value);
 		}
 	}
 
@@ -329,7 +349,7 @@ public class ConfigurationParser extends BaseParser {
 		Element element = (Element) node;
 		String name = element.getAttribute(ATTRIBUTE_NAME);
 		Mode mode = parseMode(element.getAttribute(ATTRIBUTE_MODE), TAG_CIPHER_SUITE);
-		
+
 		CipherSuiteRegister.getInstance().setModeForCipherSuite(name, mode);
 	}
 

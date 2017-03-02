@@ -27,7 +27,9 @@ public class ConfigurationRegister {
 	 * Directives in a text form
 	 */
 	public static final String DEBUG = "debug";
-	public static final String PORT = "port";
+	public static final String LOCAL_PORT = "localPort";
+	public static final String REMOTE_HOST = "remoteHost";
+	public static final String REMOTE_PORT = "remotePort";
 
 	/**
 	 * Other values
@@ -130,7 +132,7 @@ public class ConfigurationRegister {
 	 * @return collection with the names of all the supported directives
 	 */
 	private List<String> getDirectives() {
-		String[] directives = {DEBUG, PORT};
+		String[] directives = {DEBUG, LOCAL_PORT, REMOTE_HOST, REMOTE_PORT};
 		return new ArrayList<>(Arrays.asList(directives));
 	}
 
@@ -144,14 +146,30 @@ public class ConfigurationRegister {
 		return getDirectives().contains(name);
 	}
 
-	public void setPort(Integer value) {
-		setDirective(PORT, value);
+	public void setLocalPort(Integer value) {
+		setDirective(LOCAL_PORT, value);
 	}
 
-	public Integer getPort() {
-		return (Integer) getDirective(PORT);
+	public Integer getLocalPort() {
+		return (Integer) getDirective(LOCAL_PORT);
+	}
+	
+	public void setRemotePort(Integer value) {
+		setDirective(REMOTE_PORT, value);
 	}
 
+	public Integer getRemotePort() {
+		return (Integer) getDirective(REMOTE_PORT);
+	}
+	
+	public void setRemoteHost(String value) {
+		setDirective(REMOTE_HOST, value);
+	}
+
+	public String getRemoteHost() {
+		return (String) getDirective(REMOTE_HOST);
+	}
+	
 	public void setDebug(Boolean value) {
 		setDirective(DEBUG, value);
 	}

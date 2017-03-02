@@ -38,15 +38,16 @@ public class Controller {
 	 *
 	 * @throws XmlParserException in case of any error related to parsing XML
 	 * @throws IOException in case of any error
+	 * @return true, if no vulnerable behaviour captured, false otherwise
 	 */
-	public void run() throws XmlParserException, IOException {
+	public boolean run() throws XmlParserException, IOException {
 		boolean ok = startup();
 		if (!ok) {
-			return;
+			return false;
 		}
 
 		doMenu();
-		dispose();
+		return dispose();
 	}
 
 	/**
@@ -84,7 +85,7 @@ public class Controller {
 	 */
 	private String getMenuHeader() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("SSL/TLS proxy server is running on port ").append(ConfigurationRegister.getInstance().getPort()).append(".").append("\n");
+		sb.append("SSL/TLS proxy server is running on port ").append(ConfigurationRegister.getInstance().getLocalPort()).append(".").append("\n");
 		sb.append("Available choices: ").append("\n");
 		sb.append("0) Shutdown proxy sever and save log of captured events").append("\n");
 		sb.append("\n");
@@ -140,13 +141,16 @@ public class Controller {
 	 *
 	 * @throws XmlParserException in case of any error related to parsing XML
 	 * @throws IOException in case of any error
+	 * @return true, if no vulnerable behaviour captured, false otherwise
 	 */
-	private void dispose() throws XmlParserException, IOException {
+	private boolean dispose() throws XmlParserException, IOException {
 		Log.infoln("Shutting down proxy server...");
 		proxy.stop();
 		Log.infoln("Proxy server closed.");
 
 		doHtmlExport();
+		
+		return ReportRegister.getInstance().getReportsClientHello().isEmpty();
 	}
 
 	/**

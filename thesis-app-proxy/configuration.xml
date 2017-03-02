@@ -2,7 +2,10 @@
 <configuration>
 	<directives>
 		<directive name="debug" value="true" />
-		<directive name="port" value="6880" />
+		<directive name="localPort" value="2222" />
+		<directive name="remoteHost" value="seznam.cz" />
+		<directive name="remotePort" value="443" />
+		
 	</directives>
 	
 	<protocols>
