@@ -12,22 +12,8 @@ import java.util.List;
  *
  * @author Ondřej Směták <posta@ondrejsmetak.cz>
  */
-public class ClientHello extends BaseEntity {
-
-	/**
-	 * Usefull hexadecimal constants, that are used inside Client Hello
-	 */
-	private static final Hex CONTENT_TYPE = new Hex("16");
-
-	private static final Hex VERSION_SSL_V_2 = new Hex("0200");
-	private static final Hex VERSION_SSL_V_3 = new Hex("0300");
-	private static final Hex VERSION_TLS_V_1_0 = new Hex("0301");
-	private static final Hex VERSION_TLS_V_1_1 = new Hex("0302");
-	private static final Hex VERSION_TLS_V_1_2 = new Hex("0303");
-	private static final Hex VERSION_TLS_V_1_3 = new Hex("0304");
-
-	private static final Hex HANDSHAKE_TYPE_CLIENT_HELLO = new Hex("01");
-
+public class ClientHello extends BasePayloadEntity {
+	
 	/**
 	 * Version in hexadecimal format used in handshake
 	 */
@@ -82,23 +68,7 @@ public class ClientHello extends BaseEntity {
 		/*we could continue in parsing, that we dont't acutally care about following values*/
 	}
 
-	/**
-	 * Returns collection containing all possible versions used in Client Hello
-	 *
-	 * @return collection with all possible versions
-	 */
-	private static List<Hex> getAllVersions() {
-		Hex[] data = new Hex[]{
-			VERSION_SSL_V_2,
-			VERSION_SSL_V_3,
-			VERSION_TLS_V_1_0,
-			VERSION_TLS_V_1_1,
-			VERSION_TLS_V_1_2,
-			VERSION_TLS_V_1_3
-		};
 
-		return Arrays.asList(data);
-	}
 
 	/**
 	 * Determines, if array of bytes if Client Hello

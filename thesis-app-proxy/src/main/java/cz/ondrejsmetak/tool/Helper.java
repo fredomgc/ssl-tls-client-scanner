@@ -178,6 +178,10 @@ public class Helper {
 		return DatatypeConverter.parseHexBinary(string);
 	}
 
+	public static byte[] toByteArray(Hex hex) {
+		return DatatypeConverter.parseHexBinary(hex.toString());
+	}
+	
 	/**
 	 * Transforms array of Bytes into array of bytes
 	 *
