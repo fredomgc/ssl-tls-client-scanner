@@ -8,13 +8,26 @@ import cz.ondrejsmetak.other.XmlParserException;
 import cz.ondrejsmetak.parser.CipherParser;
 import cz.ondrejsmetak.parser.ConfigurationParser;
 import cz.ondrejsmetak.tool.Log;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 /**
  * Main controller of application
@@ -68,9 +81,51 @@ public class Controller {
 				userInput = scanner.nextLine();
 				if ("0".equals(userInput)) {
 					/*do something before application exit ?*/
-				} /*else if ("1".equals(userInput)) {
+				} else if ("1".equals(userInput)) {
+					ProxyServer.keystore = "two";
+					proxy.reload();
+					
+//					System.setProperty("javax.net.ssl.keyStore", "/home/fredomgc/Plocha/keystore/mySrvKeystore2");
+//					System.setProperty("javax.net.ssl.keyStorePassword", "lollol");
+//
+//					System.out.print("KeyStore changed");
+//
+//					System.err.println("A: " + HttpsURLConnection.getDefaultSSLSocketFactory());
+//					
+//					KeyStore ts;
+//					try {
+//						ts = KeyStore.getInstance("JKS");
+//
+//						ts.load(new FileInputStream(new File("/home/fredomgc/Plocha/keystore/mySrvKeystore2")), "lollol".toCharArray());
+//
+//						KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+//						kmf.init(ts, "lollol".toCharArray());
+//						
+//						TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+//						tmf.init(ts);
+//
+//						SSLContext sslContext = SSLContext.getInstance("TLS");
+//						sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
+//
+//						HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
+//						
+//						//ProxyServer.custom = sslContext.getServerSocketFactory();
+//						
+//						//SSLSocketFactory
+//						//sslContext.getSocketFactory().
+//						
+//						
+//					} catch (Exception ex) {
+//						ex.printStackTrace();
+//					}
+//
+//					proxy.stop();
+//					//proxy.reload();
+//					
+//					proxy.run();
+					
 					userInput = null;
-				} */ else {
+				} else {
 					System.out.println("Unrecognized input. You must type supported integer value!");
 					userInput = null;
 				}
@@ -88,6 +143,7 @@ public class Controller {
 		sb.append("SSL/TLS proxy server is running on port ").append(ConfigurationRegister.getInstance().getLocalPort()).append(".").append("\n");
 		sb.append("Available choices: ").append("\n");
 		sb.append("0) Shutdown proxy sever and save log of captured events").append("\n");
+		sb.append("1) Change keystore").append("\n");
 		sb.append("\n");
 		return sb.toString();
 	}
@@ -149,7 +205,7 @@ public class Controller {
 		Log.infoln("Proxy server closed.");
 
 		doHtmlExport();
-		
+
 		return ReportRegister.getInstance().getReportsClientHello().isEmpty();
 	}
 

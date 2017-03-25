@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<directives>
+		<directive name="debug" value="true" />
+		<directive name="localPort" value="2222" />
+		<directive name="remoteHost" value="seznam.cz" />
+		<directive name="remotePort" value="443" />
+		
+	</directives>
+	
+	<protocols>
+		<highestSupportedProtocol name="TLS 1.2"  mode="mustBe" />
+	</protocols>
+	
+	<cipherSuites>
+		<cipherSuite name="TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256" mode="mustNotBe" />
+		<cipherSuite name="TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256" mode="mustBe" />
+		<cipherSuite name="TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256" mode="mustBe" />
+		<cipherSuite name="TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256" mode="mustBe" />
+		<cipherSuite name="TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384" mode="mustBe" />
+		<cipherSuite name="TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384" mode="mustBe" />
+		<cipherSuite name="TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA" mode="mustBe" />
+		<cipherSuite name="TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA" mode="mustBe" />
+		<cipherSuite name="TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA" mode="mustBe" />
+		<cipherSuite name="TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA" mode="mustBe" />
+		<cipherSuite name="TLS_DHE_RSA_WITH_AES_128_CBC_SHA" mode="mustBe" />
+		<cipherSuite name="TLS_DHE_RSA_WITH_AES_256_CBC_SHA" mode="mustBe" />
+		<cipherSuite name="TLS_RSA_WITH_AES_128_CBC_SHA" mode="mustBe" />
+		<cipherSuite name="TLS_RSA_WITH_AES_256_CBC_SHA" mode="mustBe" />
+		<cipherSuite name="TLS_RSA_WITH_3DES_EDE_CBC_SHA" mode="mustBe" />
+	</cipherSuites>
+	
+	<certificates>
+		<certificate name="muj certifikat" behaviour="default" path="/home/user/foo.jks" password="bar" />
+		<certificate name="spatny" behaviour="reject" path="/home/user/foo.jks" password="bar" />
+		<certificate name="prosly" behaviour="reject" path="/home/user/foo.jks" password="bar" />
+		<certificate name="slaba sifra, ale prijmout klientem" behaviour="accept" path="/home/user/foo.jks" password="bar" />
+	</certificates>
+	
+	<other>
+		<tlsFallbackScsv mode="canBe" />
+	</other>
+</configuration>
