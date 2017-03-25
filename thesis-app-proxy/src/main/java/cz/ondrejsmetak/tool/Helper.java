@@ -181,7 +181,7 @@ public class Helper {
 	public static byte[] toByteArray(Hex hex) {
 		return DatatypeConverter.parseHexBinary(hex.toString());
 	}
-	
+
 	/**
 	 * Transforms array of Bytes into array of bytes
 	 *
@@ -320,4 +320,15 @@ public class Helper {
 	public static boolean isEven(int number) {
 		return !isOdd(number);
 	}
+
+	/**
+	 * Exists file on given path?
+	 *
+	 * @param path path to file
+	 * @return true, if file exists, false otherwise
+	 */
+	public static boolean isFile(String path) {
+		return new File(path).exists();
+	}
+
 }

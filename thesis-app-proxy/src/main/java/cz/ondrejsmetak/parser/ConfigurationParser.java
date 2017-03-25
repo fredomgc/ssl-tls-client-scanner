@@ -5,6 +5,7 @@ import cz.ondrejsmetak.CipherSuiteRegister;
 import cz.ondrejsmetak.ConfigurationRegister;
 import cz.ondrejsmetak.ResourceManager;
 import cz.ondrejsmetak.entity.CipherSuite;
+import cz.ondrejsmetak.entity.ConfigurationCertificate;
 import cz.ondrejsmetak.entity.Mode;
 import cz.ondrejsmetak.entity.Protocol;
 import cz.ondrejsmetak.other.XmlParserException;
@@ -43,10 +44,14 @@ public class ConfigurationParser extends BaseParser {
 	private static final String TAG_TLS_FALLBACK_SCSV = "tlsFallbackScsv";
 	private static final String TAG_CIPHER_SUITES = "cipherSuites";
 	private static final String TAG_CIPHER_SUITE = "cipherSuite";
+	private static final String TAG_CERTIFICATES = "certificates";
+	private static final String TAG_CERTIFICATE = "certificate";
 
 	private static final String ATTRIBUTE_NAME = "name";
 	private static final String ATTRIBUTE_VALUE = "value";
 	private static final String ATTRIBUTE_MODE = "mode";
+	private static final String ATTRIBUTE_PATH = "path";
+	private static final String ATTRIBUTE_PASSWORD = "password";
 
 	@Override
 	public void createDefault() throws IOException {
@@ -176,6 +181,32 @@ public class ConfigurationParser extends BaseParser {
 		} catch (ParserConfigurationException | SAXException | IllegalArgumentException | IOException ex) {
 			throw new XmlParserException(ex);
 		}
+	}
+
+	/**
+	 * Parse "<certificate>" tag
+	 *
+	 * @param node tag
+	 * @return certificate, that will be available in application
+	 * @throws XmlParserException in case of any error
+	 */
+	private ConfigurationCertificate parseCertificate(Node node) throws XmlParserException {
+		if (!(node instanceof Element) || !((Element) node).getTagName().equals(TAG_CERTIFICATE)) {
+			return null;
+		}
+		checkAttributesOfNode(node, ATTRIBUTE_NAME, ATTRIBUTE_MODE, ATTRIBUTE_PATH, ATTRIBUTE_PASSWORD);
+
+		Element element = (Element) node;
+		String name = element.getAttribute(ATTRIBUTE_NAME);
+		Mode mode = parseMode(element.getAttribute(ATTRIBUTE_MODE), TAG_CERTIFICATE, Mode.Type.CAN_BE);
+		String path = element.getAttribute(ATTRIBUTE_PATH);
+		String password = element.getAttribute(ATTRIBUTE_PASSWORD);
+
+		if (!Helper.isFile(path)) {
+			throw new XmlParserException(String.format("Keystore with filepath [%s] not found.", path));
+		}
+		
+		return new ConfigurationCertificate(name, mode, path, password);
 	}
 
 	/**

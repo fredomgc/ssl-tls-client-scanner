@@ -49,7 +49,7 @@ public abstract class BaseParser {
 
 		return mode;
 	}
-
+	
 	/**
 	 * Returns first and only tag with given name
 	 *

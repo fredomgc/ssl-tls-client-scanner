@@ -31,10 +31,10 @@
 	</cipherSuites>
 	
 	<certificates>
-		<certificate name="muj certifikat" behaviour="default" path="/home/user/foo.jks" password="bar" />
-		<certificate name="spatny" behaviour="reject" path="/home/user/foo.jks" password="bar" />
-		<certificate name="prosly" behaviour="reject" path="/home/user/foo.jks" password="bar" />
-		<certificate name="slaba sifra, ale prijmout klientem" behaviour="accept" path="/home/user/foo.jks" password="bar" />
+		<certificate name="muj certifikat" mode="mustBe" path="/home/user/foo.jks" password="bar" />
+		<certificate name="spatny" mode="mustNotBe" path="/home/user/foo.jks" password="bar" />
+		<certificate name="prosly" mode="mustNotBe" path="/home/user/foo.jks" password="bar" />
+		<certificate name="slaba sifra, ale prijmout klientem" mode="mustBe" path="/home/user/foo.jks" password="bar" />
 	</certificates>
 	
 	<other>
