@@ -28,6 +28,10 @@ public class Log {
 		System.out.println(message);
 	}
 
+	public static void infoln(String format, Object... args) {
+		infoln(String.format(format, args));
+	}
+
 	/**
 	 * Prints given error message
 	 *
@@ -44,6 +48,10 @@ public class Log {
 	 */
 	public static void errorln(Object message) {
 		System.out.println("! ERROR: " + message);
+	}
+	
+	public static void errorln(String format, Object... args) {
+		errorln(String.format(format, args));
 	}
 
 	/**
@@ -64,6 +72,11 @@ public class Log {
 		System.out.println("WARNING: " + message);
 	}
 
+	public static void warningln(String format, Object... args) {
+		warningln(String.format(format, args));
+	}
+	
+	
 	/**
 	 * Print exception for debug purpose
 	 *

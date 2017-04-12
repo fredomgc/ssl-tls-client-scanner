@@ -34,7 +34,13 @@ public class ConfigurationRegister {
 	/**
 	 * Other values
 	 */
-	private Protocol highestSupportedProtocol = null;
+	//private Protocol highestSupportedProtocol = null;
+	//SSLv2, SSLv3, TLSv10, TLSv11, TLSv12, TLSv13
+	private Protocol sslv2 = null;
+	private Protocol sslv3 = null;
+	private Protocol tlsv10 = null;
+	private Protocol tlsv11 = null;
+	private Protocol tlsv12 = null;
 
 	private Mode tlsFallbackScsv = null;
 
@@ -153,7 +159,7 @@ public class ConfigurationRegister {
 	public Integer getLocalPort() {
 		return (Integer) getDirective(LOCAL_PORT);
 	}
-	
+
 	public void setRemotePort(Integer value) {
 		setDirective(REMOTE_PORT, value);
 	}
@@ -161,7 +167,7 @@ public class ConfigurationRegister {
 	public Integer getRemotePort() {
 		return (Integer) getDirective(REMOTE_PORT);
 	}
-	
+
 	public void setRemoteHost(String value) {
 		setDirective(REMOTE_HOST, value);
 	}
@@ -169,7 +175,7 @@ public class ConfigurationRegister {
 	public String getRemoteHost() {
 		return (String) getDirective(REMOTE_HOST);
 	}
-	
+
 	public void setDebug(Boolean value) {
 		setDirective(DEBUG, value);
 	}
@@ -185,16 +191,101 @@ public class ConfigurationRegister {
 	public void setTlsFallbackScsv(Mode tlsFallbackScsv) {
 		this.tlsFallbackScsv = tlsFallbackScsv;
 	}
+	
+	public List<String> getMissingProtocols() {
+		List<String> missing = new ArrayList<>();
+		List<Protocol> protocols = Arrays.asList(sslv2, sslv3, tlsv10, tlsv11, tlsv12);
+		List<Protocol.Type> types = Arrays.asList(Protocol.Type.SSLv2, Protocol.Type.SSLv3, Protocol.Type.TLSv10, Protocol.Type.TLSv11, Protocol.Type.TLSv12);
 
-	public Protocol getHighestSupportedProtocol() {
-		return highestSupportedProtocol;
+		for (int i = 0; i < protocols.size(); i++) {
+			if (protocols.get(i) == null) {
+				missing.add(types.get(i).toString());
+			}
+		}
+
+		return missing;
 	}
 
-	public List<Protocol> getSupportedProtocols() {
-		return Protocol.getProtocolsUpTo(highestSupportedProtocol.getType(), highestSupportedProtocol.getMode());
+	private void checkProtocol(Protocol newValue, Protocol.Type type) {
+		if (type != newValue.getType()) {
+			throw new IllegalArgumentException("Protocol " + type + " is expected!");
+		}
 	}
 
-	public void setHighestSupportedProtocol(Protocol highestSupportedProtocol) {
-		this.highestSupportedProtocol = highestSupportedProtocol;
+	public List<Protocol> getProtocols(){
+		return new ArrayList<>(Arrays.asList(sslv2, sslv3, tlsv10, tlsv11, tlsv12));
+	}
+	
+	public void setProtocol(Protocol protocol) {
+		switch (protocol.getType()) {
+			case SSLv2:
+				setProtocolSSLv2(protocol);
+				break;
+
+			case SSLv3:
+				setProtocolSSLv3(protocol);
+				break;
+
+			case TLSv10:
+				setProtocolTLSv10(protocol);
+				break;
+
+			case TLSv11:
+				setProtocolTLSv11(protocol);
+				break;
+
+			case TLSv12:
+				setProtocolTLSv12(protocol);
+				break;
+
+			default:
+				throw new IllegalArgumentException(String.format("Unsupported protocol type [%s]!", protocol.getType()));
+
+		}
+	}
+
+	private void setProtocolSSLv2(Protocol protocol) {
+		checkProtocol(protocol, Protocol.Type.SSLv2);
+		this.sslv2 = protocol;
+	}
+
+	public Protocol getProtocolSSLv2() {
+		return this.sslv2;
+	}
+
+	private void setProtocolSSLv3(Protocol protocol) {
+		checkProtocol(protocol, Protocol.Type.SSLv3);
+		this.sslv3 = protocol;
+	}
+
+	public Protocol getProtocolSSLv3() {
+		return this.sslv3;
+	}
+
+	private void setProtocolTLSv10(Protocol protocol) {
+		checkProtocol(protocol, Protocol.Type.TLSv10);
+		this.tlsv10 = protocol;
+	}
+
+	public Protocol getProtocolTLSv10() {
+		return this.tlsv10;
+	}
+
+	private void setProtocolTLSv11(Protocol protocol) {
+		checkProtocol(protocol, Protocol.Type.TLSv11);
+		this.tlsv11 = protocol;
+	}
+
+	public Protocol getProtocolTLSv11() {
+		return this.tlsv11;
+	}
+
+	private void setProtocolTLSv12(Protocol protocol) {
+		checkProtocol(protocol, Protocol.Type.TLSv12);
+		this.tlsv12 = protocol;
+	}
+
+	public Protocol getProtocolTLSv12() {
+		return this.tlsv12;
 	}
 }

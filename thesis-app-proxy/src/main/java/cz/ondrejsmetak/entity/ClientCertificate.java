@@ -15,17 +15,20 @@ import java.util.logging.Logger;
  *
  * @author Ondřej Směták <posta@ondrejsmetak.cz>
  */
-public class ConfigurationCertificate extends BaseEntity {
+public class ClientCertificate extends BaseEntity {
 
 	private String name;
 
+	private String password;
+	
 	private Mode mode;
 
 	private KeyStore keystore;
 
-	public ConfigurationCertificate(String name, Mode mode, String path, String password) {
+	public ClientCertificate(String name, Mode mode, String path, String password) {
 		this.name = name;
 		this.mode = mode;
+		this.password = password;
 		this.keystore = createKeyStoreFromPath(path, password);
 	}
 
@@ -39,4 +42,20 @@ public class ConfigurationCertificate extends BaseEntity {
 		}
 	}
 
+	public String getName() {
+		return name;
+	}
+
+	public Mode getMode() {
+		return mode;
+	}
+
+	public KeyStore getKeystore() {
+		return keystore;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+	
 }

@@ -17,7 +17,18 @@ public class Protocol extends BaseEntity {
 	 * Type of protocol
 	 */
 	public enum Type {
-		SSLv2, SSLv3, TLSv10, TLSv11, TLSv12, TLSv13
+		SSLv2("SSLv2"), SSLv3("SSLv3"), TLSv10("TLSv1.0"), TLSv11("TLSv1.1"), TLSv12("TLSv1.2"), TLSv13("TLSv1.3");
+
+		private final String name;
+
+		private Type(String s) {
+			name = s;
+		}
+
+		@Override
+		public String toString() {
+			return this.name;
+		}
 	}
 
 	/**

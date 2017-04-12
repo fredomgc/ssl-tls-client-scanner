@@ -2,10 +2,11 @@ package cz.ondrejsmetak.parser;
 
 import cz.ondrejsmetak.parser.BaseParser;
 import cz.ondrejsmetak.CipherSuiteRegister;
+import cz.ondrejsmetak.ConfigurationCertificateRegister;
 import cz.ondrejsmetak.ConfigurationRegister;
 import cz.ondrejsmetak.ResourceManager;
 import cz.ondrejsmetak.entity.CipherSuite;
-import cz.ondrejsmetak.entity.ConfigurationCertificate;
+import cz.ondrejsmetak.entity.ClientCertificate;
 import cz.ondrejsmetak.entity.Mode;
 import cz.ondrejsmetak.entity.Protocol;
 import cz.ondrejsmetak.other.XmlParserException;
@@ -39,7 +40,7 @@ public class ConfigurationParser extends BaseParser {
 	private static final String TAG_DIRECTIVES = "directives";
 	private static final String TAG_DIRECTIVE = "directive";
 	private static final String TAG_PROTOCOLS = "protocols";
-	private static final String TAG_HIGHEST_SUPPORTED_PROTOCOL = "highestSupportedProtocol";
+	private static final String TAG_PROTOCOL = "protocol";
 	private static final String TAG_OTHER = "other";
 	private static final String TAG_TLS_FALLBACK_SCSV = "tlsFallbackScsv";
 	private static final String TAG_CIPHER_SUITES = "cipherSuites";
@@ -79,9 +80,11 @@ public class ConfigurationParser extends BaseParser {
 			TAG_DIRECTIVES,
 			TAG_DIRECTIVE,
 			TAG_PROTOCOLS,
-			TAG_HIGHEST_SUPPORTED_PROTOCOL,
+			TAG_PROTOCOL,
 			TAG_CIPHER_SUITES,
 			TAG_CIPHER_SUITE,
+			TAG_CERTIFICATES,
+			TAG_CERTIFICATE,
 			TAG_OTHER,
 			TAG_TLS_FALLBACK_SCSV}));
 
@@ -158,15 +161,18 @@ public class ConfigurationParser extends BaseParser {
 					 * Cipher suites
 					 */
 					parseCipherSuites((Element) node);
-				}
-			}
 
-			/**
-			 * Highest supported protocol
-			 */
-			Protocol highestSupportedProtocol = parseHighestSupportedProtocol(getElementByTagName(configuration, TAG_HIGHEST_SUPPORTED_PROTOCOL));
-			if (highestSupportedProtocol != null) {
-				ConfigurationRegister.getInstance().setHighestSupportedProtocol(highestSupportedProtocol);
+					/**
+					 * Certificates
+					 */
+					parseCertificates((Element) node);
+
+					/**
+					 * Protocols
+					 */
+					parseProtocols((Element) node);
+
+				}
 			}
 
 			/**
@@ -184,15 +190,77 @@ public class ConfigurationParser extends BaseParser {
 	}
 
 	/**
+	 * Parse parent "protocols" tag and all child "protocol" tags
+	 *
+	 * @param node tag representing "protocols"
+	 * @throws XmlParserException in case of any error
+	 */
+	private void parseProtocols(Element node) throws XmlParserException {
+		if (node.getTagName().equals(TAG_PROTOCOLS)) {
+			NodeList protocols = node.getElementsByTagName(TAG_PROTOCOL);
+
+			for (int i = 0; i < protocols.getLength(); i++) {
+				parseProtocol(protocols.item(i));
+			}
+
+			if (!ConfigurationRegister.getInstance().getMissingProtocols().isEmpty()) {
+				throw new XmlParserException(String.format("Following protocols are missing %s, can't continue without them!", ConfigurationRegister.getInstance().getMissingProtocols()));
+			}
+		}
+	}
+
+	/**
+	 * Parse "<protocol>" tag
+	 *
+	 * @param node tag
+	 * @return protocol, that will be available in application
+	 * @throws XmlParserException in case of any error
+	 */
+	private void parseProtocol(Node node) throws XmlParserException {
+		if (!(node instanceof Element) || !((Element) node).getTagName().equals(TAG_PROTOCOL)) {
+			return;
+		}
+		checkAttributesOfNode(node, ATTRIBUTE_NAME, ATTRIBUTE_MODE);
+
+		Element element = (Element) node;
+		String name = element.getAttribute(ATTRIBUTE_NAME);
+		Mode mode = parseMode(element.getAttribute(ATTRIBUTE_MODE), TAG_PROTOCOL);
+
+		Protocol protocol = new Protocol(name, mode);
+
+		if (protocol.getType() == Protocol.Type.TLSv13) {
+			throw new XmlParserException("Protocol TLSv1.3 is not supported!");
+		}
+
+		ConfigurationRegister.getInstance().setProtocol(protocol);
+	}
+
+	/**
+	 * Parse parent "certificates" tag and all child "certificate" tags
+	 *
+	 * @param node tag representing "certificates"
+	 * @throws XmlParserException in case of any error
+	 */
+	private void parseCertificates(Element node) throws XmlParserException {
+		if (node.getTagName().equals(TAG_CERTIFICATES)) {
+			NodeList certificates = node.getElementsByTagName(TAG_CERTIFICATE);
+
+			for (int i = 0; i < certificates.getLength(); i++) {
+				parseCertificate(certificates.item(i));
+			}
+		}
+	}
+
+	/**
 	 * Parse "<certificate>" tag
 	 *
 	 * @param node tag
 	 * @return certificate, that will be available in application
 	 * @throws XmlParserException in case of any error
 	 */
-	private ConfigurationCertificate parseCertificate(Node node) throws XmlParserException {
+	private void parseCertificate(Node node) throws XmlParserException {
 		if (!(node instanceof Element) || !((Element) node).getTagName().equals(TAG_CERTIFICATE)) {
-			return null;
+			return;
 		}
 		checkAttributesOfNode(node, ATTRIBUTE_NAME, ATTRIBUTE_MODE, ATTRIBUTE_PATH, ATTRIBUTE_PASSWORD);
 
@@ -205,28 +273,14 @@ public class ConfigurationParser extends BaseParser {
 		if (!Helper.isFile(path)) {
 			throw new XmlParserException(String.format("Keystore with filepath [%s] not found.", path));
 		}
-		
-		return new ConfigurationCertificate(name, mode, path, password);
-	}
 
-	/**
-	 * Parse "<highestSupportedProtocol>" tag
-	 *
-	 * @param node tag
-	 * @return protocol, that will be used during analysis of Client Hello
-	 * @throws XmlParserException in case of any error
-	 */
-	private Protocol parseHighestSupportedProtocol(Node node) throws XmlParserException {
-		if (!(node instanceof Element) || !((Element) node).getTagName().equals(TAG_HIGHEST_SUPPORTED_PROTOCOL)) {
-			return null;
+		ClientCertificate certificate = new ClientCertificate(name, mode, path, password);
+
+		if (ConfigurationCertificateRegister.getInstance().containsConfigurationCertificate(certificate)) {
+			throw new XmlParserException(String.format("Certificate with name [%s] already exists.", path));
 		}
-		checkAttributesOfNode(node, ATTRIBUTE_MODE, ATTRIBUTE_NAME);
 
-		Element element = (Element) node;
-		Mode mode = parseMode(element.getAttribute(ATTRIBUTE_MODE), TAG_HIGHEST_SUPPORTED_PROTOCOL);
-		Protocol protocol = new Protocol(element.getAttribute(ATTRIBUTE_NAME), mode);
-
-		return protocol;
+		ConfigurationCertificateRegister.getInstance().addConfigurationCertificate(certificate);
 	}
 
 	/**

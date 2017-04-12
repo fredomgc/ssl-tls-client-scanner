@@ -106,39 +106,39 @@ public class ClientHelloScanner extends BaseScanner {
 	 * Scan protocols offered in Client Hello
 	 */
 	private void doScanProtocols() {
-		Protocol highestSupportedProtocol = ConfigurationRegister.getInstance().getHighestSupportedProtocol();
-		String message = null;
-
-		if (highestSupportedProtocol.getMode().isCanBe()) {
-			//in this case, we don't care
-		} else if (highestSupportedProtocol.getMode().isMustBe()) {
-			List<Protocol> missing = new ArrayList<>(ConfigurationRegister.getInstance().getSupportedProtocols());
-			missing.removeAll(clientHello.getSupportedProtocolsDuringHandshake());
-
-			List<Protocol> indwelling = new ArrayList<>(clientHello.getSupportedProtocolsDuringHandshake());
-			indwelling.removeAll(ConfigurationRegister.getInstance().getSupportedProtocols());
-
-			if (!missing.isEmpty()) {
-				message = String.format("Highest supported protocol MUST BE [%s], but following protocol(s) is/are NOT supported: %s!",
-						highestSupportedProtocol.toString(), missing);
-			}
-
-			if (!indwelling.isEmpty()) {
-				message = String.format("Highest supported protocol MUST BE [%s], but following protocol(s) is/are ALSO supported: %s!",
-						highestSupportedProtocol.toString(), indwelling);
-			}
-		} else if (highestSupportedProtocol.getMode().isMustNotBe()) {
-
-			if (clientHello.getSupportedProtocolsDuringHandshake().contains(highestSupportedProtocol)) {
-				message = String.format("Highest supported protocol MUST NOT BE [%s], but this protocol IS supported!",
-						highestSupportedProtocol);
-			}
-		}
-
-		if (message != null) {
-			ReportMessage rp = new ReportMessage(message, ReportMessage.Category.PROTOCOL, highestSupportedProtocol.getMode(), ReportMessage.Type.ERROR);
-			reportMessages.add(rp);
-		}
+//		Protocol highestSupportedProtocol = ConfigurationRegister.getInstance().getHighestSupportedProtocol();
+//		String message = null;
+//
+//		if (highestSupportedProtocol.getMode().isCanBe()) {
+//			//in this case, we don't care
+//		} else if (highestSupportedProtocol.getMode().isMustBe()) {
+//			List<Protocol> missing = new ArrayList<>(ConfigurationRegister.getInstance().getSupportedProtocols());
+//			missing.removeAll(clientHello.getSupportedProtocolsDuringHandshake());
+//
+//			List<Protocol> indwelling = new ArrayList<>(clientHello.getSupportedProtocolsDuringHandshake());
+//			indwelling.removeAll(ConfigurationRegister.getInstance().getSupportedProtocols());
+//
+//			if (!missing.isEmpty()) {
+//				message = String.format("Highest supported protocol MUST BE [%s], but following protocol(s) is/are NOT supported: %s!",
+//						highestSupportedProtocol.toString(), missing);
+//			}
+//
+//			if (!indwelling.isEmpty()) {
+//				message = String.format("Highest supported protocol MUST BE [%s], but following protocol(s) is/are ALSO supported: %s!",
+//						highestSupportedProtocol.toString(), indwelling);
+//			}
+//		} else if (highestSupportedProtocol.getMode().isMustNotBe()) {
+//
+//			if (clientHello.getSupportedProtocolsDuringHandshake().contains(highestSupportedProtocol)) {
+//				message = String.format("Highest supported protocol MUST NOT BE [%s], but this protocol IS supported!",
+//						highestSupportedProtocol);
+//			}
+//		}
+//
+//		if (message != null) {
+//			ReportMessage rp = new ReportMessage(message, ReportMessage.Category.PROTOCOL, highestSupportedProtocol.getMode(), ReportMessage.Type.ERROR);
+//			reportMessages.add(rp);
+//		}
 	}
 
 }

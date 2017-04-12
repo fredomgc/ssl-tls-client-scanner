@@ -9,7 +9,11 @@
 	</directives>
 	
 	<protocols>
-		<highestSupportedProtocol name="TLS 1.2"  mode="mustBe" />
+		<protocol name="SSLv2" mode="canBe" />
+		<protocol name="SSLv3" mode="mustNotBe" />
+		<protocol name="TLS 1.0" mode="canBe" />
+		<protocol name="TLS 1.1" mode="canBe" />
+		<protocol name="TLS 1.2" mode="mustBe" />
 	</protocols>
 	
 	<cipherSuites>
@@ -29,6 +33,11 @@
 		<cipherSuite name="TLS_RSA_WITH_AES_256_CBC_SHA" mode="mustBe" />
 		<cipherSuite name="TLS_RSA_WITH_3DES_EDE_CBC_SHA" mode="mustBe" />
 	</cipherSuites>
+	
+	<certificates>
+		<certificate name="Nejaky nazev co udal uzivatel" mode="mustBe" path="one.jks" password="lollol" />
+		<certificate name="Nejaky jiny nazev" mode="mustNotBe" path="two.jks" password="lollol" />
+	</certificates>
 	
 	<other>
 		<tlsFallbackScsv mode="canBe" />

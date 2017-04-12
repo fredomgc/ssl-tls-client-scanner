@@ -1,7 +1,9 @@
 package cz.ondrejsmetak;
 
 import cz.ondrejsmetak.entity.ClientHello;
+import cz.ondrejsmetak.entity.ClientCertificate;
 import cz.ondrejsmetak.entity.Payload;
+import cz.ondrejsmetak.entity.Protocol;
 import cz.ondrejsmetak.entity.ReportClientHello;
 import cz.ondrejsmetak.entity.ServerCertificate;
 import cz.ondrejsmetak.scanner.ClientHelloScanner;
@@ -21,6 +23,7 @@ import javax.net.ServerSocketFactory;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSession;
@@ -33,6 +36,11 @@ import javax.net.ssl.TrustManagerFactory;
  * @author Ondřej Směták <posta@ondrejsmetak.cz>
  */
 public class ProxyServer {
+
+	/**
+	 * How many bytes is considered as "active communication"
+	 */
+	private static final int ACTIVE_COMMUNICATION_BYTES = 1500;
 
 	/**
 	 * Connection on the local port
@@ -62,10 +70,22 @@ public class ProxyServer {
 	/**
 	 * Used to count captued Client Hello packets
 	 */
-	private AtomicInteger clientHelloCounter = new AtomicInteger(0);
+	private final AtomicInteger clientHelloCounter = new AtomicInteger(0);
 
-	//TODO
-	public static String keystore = "one";
+	/**
+	 * Certificate offered to the client to secure communication
+	 */
+	private ClientCertificate clientCertificate = null;
+
+	/**
+	 * Protocol used during communication with a client
+	 */
+	private Protocol clientProtocol = new Protocol(Protocol.Type.TLSv12);
+
+	/**
+	 * How many bytes was transfered during communication with client
+	 */
+	private int clientCommunicationCounter = 0;
 
 	public void run() {
 
@@ -89,8 +109,7 @@ public class ProxyServer {
 		int remotePort = ConfigurationRegister.getInstance().getRemotePort();
 		String remoteHost = ConfigurationRegister.getInstance().getRemoteHost();
 
-		ServerSocketFactory ssocketFactory = getSSLServerSocketFactory();
-		serverSocket = (SSLServerSocket) ssocketFactory.createServerSocket(localPort);
+		serverSocket = createSSLServerSocket();
 
 		final byte[] request = new byte[1024];
 		byte[] reply = new byte[4096 * 3];
@@ -173,95 +192,18 @@ public class ProxyServer {
 				// and pass them back to the client.
 				int bytesRead;
 				BufferedInputStream br = new BufferedInputStream(streamFromServer);
-				List<Byte> buffer = new ArrayList<>();
+				//List<Byte> buffer = new ArrayList<>();
 
 				try {
 					while ((bytesRead = br.read(reply, 0, reply.length)) != -1) {
-						System.err.println("Precteno bytu: " + bytesRead);
-						for (int i = 0; i < bytesRead; i++) {
-							buffer.add(reply[i]);
-						}
-
-						byte[] primitive = new byte[buffer.size()];
-						for (int i = 0; i < buffer.size(); i++) {
-							primitive[i] = buffer.get(i);
-						}
-
-						//send everything we have to the client
-						streamToClient.write(primitive, 0, buffer.size());
+						//send everything we have back to the client
+						streamToClient.write(reply, 0, reply.length);
 						streamToClient.flush();
-						buffer.clear();
-
-//						ServerCertificate.ServerCertificateCheck check = ServerCertificate.isServerCerfificate(primitive);
-//
-//						if (check == ServerCertificate.NO_SERVER_CERTIFICATE) {
-//							//send everything we have to the client
-//							streamToClient.write(primitive, 0, buffer.size());
-//							streamToClient.flush();
-//							buffer.clear();
-//						} else if (check.getEndIndex() > buffer.size()) {
-//							//not enough data, continue with capturing
-//							System.out.println("Ted se bufferujeme do budoucna");
-//						} else {
-//							System.out.println("Jsme certifikat a posilame cely buffer");
-//							System.out.println("Velikost bufferu: " + buffer.size());
-//							System.out.println("Velikost certifikatu: " + check.getLength());
-//							//System.out.println("Co cteme: " + Helper.toHexString(Arrays.copyOfRange(primitive, check.getStartIndex(), check.getEndIndex())));
-//							//System.out.println("Saham na index: " + check.getEndIndex() + ", ale pole ma velikost " + primitive.length);
-//
-//							ServerCertificate certificate = new ServerCertificate(Arrays.copyOfRange(primitive, check.getStartIndex(), check.getEndIndex()));
-//							certificate.hack();
-//							
-//							
-//							byte[] before = Arrays.copyOfRange(primitive, 0, check.getStartIndex());
-//							byte[] hack = Helper.toByteArray(certificate.toHex());
-//							byte[] rest = Arrays.copyOfRange(primitive, check.getEndIndex(), primitive.length);
-//
-//							System.err.println("Velikost before: " + before.length + " hack: " + hack.length + " rest: " + rest.length + ", soucet: " + (before.length + hack.length + rest.length));
-//
-//							byte[] merged = new byte[before.length + hack.length + rest.length];
-//							int index = 0;
-//
-//							for (int i = 0; i < before.length; i++) {
-//								merged[index++] = before[i];
-//							}
-//
-//							for (int i = 0; i < hack.length; i++) {
-//								merged[index++] = hack[i];
-//							}
-//
-//							for (int i = 0; i < rest.length; i++) {
-//								merged[index++] = rest[i];
-//							}
-//
-//							//here do something with certificate
-//							//and send it
-//							streamToClient.write(merged, 0, merged.length);
-//							streamToClient.flush();
-//							buffer.clear();
-//
-//							System.out.println("---");
-//						}
 					}
 				} catch (IOException ex) {
 					/*suppress exceptions*/
 				}
 
-//ZALOHA
-//				try {
-//					while ((bytesRead =   streamFromServer.read(reply, 0, reply.length)) != -1) {
-//						System.err.println("Precteno bytu: " + bytesRead);
-//
-//						Payload hijackedPayload = hijackStreamFromServer(reply, bytesRead, "TODO?");
-//
-//						streamToClient.write(hijackedPayload.getData(), 0, hijackedPayload.getBytesToRead());
-//						streamToClient.flush();
-//
-//					}
-//				} catch (IOException ex) {
-//					/*suppress exceptions*/
-//				}
-// \ ZALOHA
 				// The server closed its connection to us, so we close our
 				// connection to our client.
 				streamToClient.close();
@@ -282,20 +224,56 @@ public class ProxyServer {
 		}
 	}
 
-	private SSLServerSocketFactory getSSLServerSocketFactory(){
-		if("one".equals(keystore)){
-			return createSSLServerSocketFactory(new File("one.jks"), "lollol");
+	private ServerSocket createSSLServerSocket() throws IOException {
+		SSLServerSocketFactory socketFactory = createSSLServerSocketFactory(clientCertificate);
+		if (socketFactory == null) {
+			throw new IllegalStateException("Can't continue with uninitialized ServerSocketFactory!");
 		}
-		
-		if("two".equals(keystore)){
-			return createSSLServerSocketFactory(new File("two.jks"), "lollol");
-		}
-		
-		return null;
+
+		int localPort = ConfigurationRegister.getInstance().getLocalPort();
+
+		ServerSocket socket = (SSLServerSocket) socketFactory.createServerSocket(localPort);
+		((SSLServerSocket) socket).setEnabledProtocols(getTranslatedClientProtocol());
+
+		return socket;
 	}
-	
+
+	private String[] getTranslatedClientProtocol() {
+		List<String> protocols = new ArrayList<>();
+
+		switch (clientProtocol.getType()) {
+			case SSLv2:
+				protocols.add("SSLv2Hello");
+				protocols.add("SSLv3");
+				break;
+
+			case SSLv3:
+				protocols.add("SSLv3");
+				break;
+
+			case TLSv10:
+				protocols.add("TLSv1");
+				break;
+
+			case TLSv11:
+				protocols.add("TLSv1.1");
+				break;
+
+			case TLSv12:
+				protocols.add("TLSv1.2");
+				break;
+
+			default:
+				protocols.add("TLSv1.2");
+				break;
+		}
+
+		return protocols.toArray(new String[protocols.size()]);
+	}
+
 	private void hijackStreamFromClient(byte[] request, String source) {
 		//handleClientHello(request, source);
+		clientCommunicationCounter += request.length;
 	}
 
 	private Payload hijackStreamFromServer(byte[] request, int bytesRead, String source) {
@@ -304,10 +282,10 @@ public class ProxyServer {
 
 	public void reload() {
 		try {
-			int localPort = ConfigurationRegister.getInstance().getLocalPort();
-
-			serverSocket.close();
-			serverSocket = getSSLServerSocketFactory().createServerSocket(localPort);
+			if (serverSocket != null) {
+				serverSocket.close();
+			}
+			serverSocket = createSSLServerSocket();
 		} catch (IOException ex) {
 			Logger.getLogger(ProxyServer.class.getName()).log(Level.SEVERE, null, ex);
 		}
@@ -400,26 +378,72 @@ public class ProxyServer {
 		return true;
 	}
 
-	public static SSLServerSocketFactory createSSLServerSocketFactory(File keystore, String password) {
+	public void setClientProtocol(Protocol clientProtocol) {
+		this.clientProtocol = clientProtocol;
+	}
+
+	public Protocol getClientProtocol() {
+		return this.clientProtocol;
+	}
+
+	public void setConfigurationCertificate(ClientCertificate certificate) {
+		this.clientCertificate = certificate;
+	}
+
+	public ClientCertificate getClientCertificate() {
+		return this.clientCertificate;
+	}
+
+	public void startCertificateTest() {
+		clientCommunicationCounter = 0;
+	}
+
+	public void stopCertificateTest() {
+		Log.infoln("Client communicated %s bytes", clientCommunicationCounter);
+
+		if (clientCertificate.getMode().isMustBe() && clientCommunicationCounter < ACTIVE_COMMUNICATION_BYTES) {
+			//add report
+		}
+
+		if (clientCertificate.getMode().isMustNotBe() && clientCommunicationCounter > ACTIVE_COMMUNICATION_BYTES) {
+			//add report
+		}
+	}
+
+	public void startProtocolTest() {
+		clientCommunicationCounter = 0;
+	}
+
+	public void stopProtocolTest() {
+		Log.infoln("Client communicated %s bytes", clientCommunicationCounter);
+
+		if (clientProtocol.getMode().isMustBe() && clientCommunicationCounter < ACTIVE_COMMUNICATION_BYTES) {
+			//add report
+		}
+
+		if (clientProtocol.getMode().isMustNotBe() && clientCommunicationCounter > ACTIVE_COMMUNICATION_BYTES) {
+			//add report
+		}
+	}
+
+	public SSLServerSocketFactory createSSLServerSocketFactory(ClientCertificate certificate) {
 
 		try {
-			KeyStore ks = KeyStore.getInstance("JKS");
-			ks.load(new FileInputStream(keystore), password.toCharArray());
-
 			KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-			kmf.init(ks, password.toCharArray());
+			kmf.init(certificate.getKeystore(), certificate.getPassword().toCharArray());
 
 			TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-			tmf.init(ks);
+			tmf.init(certificate.getKeystore());
 
-			SSLContext sslContext = SSLContext.getInstance("TLS"); //TODO až budu testovat na ServerHello
-			sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
-			
+			SSLContext sslContext = SSLContext.getInstance("TLSv1.2"); //be aware, this value is not respected by JDK 
+
+			sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new java.security.SecureRandom());
+
 			return sslContext.getServerSocketFactory();
 		} catch (Exception ex) {
+			Log.debugException(ex);
 			return null;
 		}
 
 	}
-
 }

@@ -24,6 +24,11 @@ public class ReportRegister {
 	private final List<ReportClientHello> clientHelloRegister = new ArrayList<>();
 
 	/**
+	 * Collection of reports (each report for single certificate)
+	 */
+	private final List<ReportMessage> certificateRegister = new ArrayList<>();
+
+	/**
 	 * Returns a instance of this class
 	 *
 	 * @return instance of this class
@@ -42,4 +47,13 @@ public class ReportRegister {
 	public List<ReportClientHello> getReportsClientHello() {
 		return clientHelloRegister;
 	}
+
+	public void addReportCertificate(ReportMessage report) {
+		certificateRegister.add(report);
+	}
+
+	public List<ReportMessage> getReportsCertificate() {
+		return certificateRegister;
+	}
+
 }
