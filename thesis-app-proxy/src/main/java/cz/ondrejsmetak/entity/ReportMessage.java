@@ -90,10 +90,10 @@ public class ReportMessage {
 	 * @return mode in human readable form
 	 */
 	public String getRequiredModeHuman() {
-		if(requiredMode == null){
+		if (requiredMode == null) {
 			return "-";
 		}
-		
+
 		if (requiredMode.isCanBe()) {
 			return "can be";
 		}
@@ -108,4 +108,13 @@ public class ReportMessage {
 
 		return "-";
 	}
+
+	public boolean isTypeError() {
+		return type.equals(Type.ERROR);
+	}
+
+	public boolean isTypeSuccess() {
+		return type.equals(Type.SUCCESS);
+	}
+
 }

@@ -95,18 +95,27 @@ public class Controller {
 	}
 
 	private void scheduleTests() {
-		Log.infoln("Automatic testing will begin in " + TEST_DELAY / 1000 + " seconds.");
+		Log.infoln("Testing SSL/TLS Handshake.");
+		Log.infoln("Additional automatic testing will begin in " + TEST_DELAY / 1000 + " seconds.");
+
 		
-		//scheduleTestsOfCertificates();
-		scheduleTestsOfProtocols(false);
+		
+		scheduleTestsOfCertificates(() -> {
+				stopInfiniteLoop();
+		});
+		
+		/*
+		scheduleTestsOfProtocols(() -> {
+			scheduleTestsOfCertificates(() -> {
+				stopInfiniteLoop();
+			});
+		});*/
 	}
 
-	private void scheduleTestsOfProtocols(boolean stopAfterLastRun) {
+	private void scheduleTestsOfProtocols(Runnable callback) {
 		int delay = TEST_DELAY;
 		int counter = 1;
-		
-		
-		
+
 		List<Protocol> protocols = ConfigurationRegister.getInstance().getProtocols();
 
 		for (int i = 0; i < protocols.size() + 1; i++) {
@@ -123,25 +132,25 @@ public class Controller {
 						proxy.stopProtocolTest();
 					}
 
-					if (stopAfterLastRun && lastRun) {
-						stopInfiniteLoop();
+					if (lastRun) {
+						callback.run();
 					}
 
 					if (scheduleNext) {
 						Log.infoln("Starting protocol test for [%s].", protocol);
 						proxy.setClientProtocol(protocol);
-						proxy.reload();
 						proxy.startProtocolTest();
+						proxy.reload();
 					}
 				}
 			}, delay);
 
 			delay = TEST_DELAY * ++counter;
 		}
-		
+
 	}
 
-	private void scheduleTestsOfCertificates() {
+	private void scheduleTestsOfCertificates(Runnable callback) {
 		int delay = TEST_DELAY;
 		int counter = 1;
 		ArrayList<ClientCertificate> certificates = ConfigurationCertificateRegister.getInstance().getConfigurationCertificatesIndexable();
@@ -161,14 +170,14 @@ public class Controller {
 					}
 
 					if (lastRun) {
-						stopInfiniteLoop();
+						callback.run();
 					}
 
 					if (scheduleNext) {
 						Log.infoln("Starting certificate test for [%s].", certificate.getName());
 						proxy.setConfigurationCertificate(certificate);
-						proxy.reload();
 						proxy.startCertificateTest();
+						proxy.reload();
 					}
 				}
 			}, delay);
@@ -247,10 +256,10 @@ public class Controller {
 		return true;
 	}
 
-	private void printCurrentState(){
+	private void printCurrentState() {
 		Log.infoln("Protocol: " + proxy.getClientProtocol() + ", Certificate: " + proxy.getClientCertificate().getName());
 	}
-	
+
 	/**
 	 * Runs actions related with shutting down proxy server
 	 *
@@ -265,7 +274,7 @@ public class Controller {
 
 		doHtmlExport();
 
-		return ReportRegister.getInstance().getReportsClientHello().isEmpty();
+		return !ReportRegister.getInstance().hasAtLeastOneVulnerableMessage();
 	}
 
 	/**
@@ -305,6 +314,15 @@ public class Controller {
 		return done;
 	}
 
+	private List<ReportMessage> getReportProtocol() {
+		return ReportRegister.getInstance().getReportsProtocol();
+	}
+	
+	private List<ReportMessage> getReportCertificate() {
+		return ReportRegister.getInstance().getReportsCertificate();
+	}
+	
+
 	/**
 	 * Executes HTML export
 	 *
@@ -313,7 +331,7 @@ public class Controller {
 	private void doHtmlExport() throws IOException {
 
 		HtmlExport export = new HtmlExport();
-		String path = export.export(getReportMessages(), getReportClientHello(), timestampOfStart);
+		String path = export.export(getReportMessages(), getReportClientHello(), getReportProtocol(), getReportCertificate(), timestampOfStart);
 
 		Log.infoln("Log saved in " + path);
 	}

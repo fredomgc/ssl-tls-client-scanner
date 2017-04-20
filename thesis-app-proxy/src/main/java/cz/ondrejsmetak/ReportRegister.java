@@ -29,6 +29,11 @@ public class ReportRegister {
 	private final List<ReportMessage> certificateRegister = new ArrayList<>();
 
 	/**
+	 * Collection of reports (each report for single protocol)
+	 */
+	private final List<ReportMessage> protocolRegister = new ArrayList<>();
+
+	/**
 	 * Returns a instance of this class
 	 *
 	 * @return instance of this class
@@ -38,6 +43,31 @@ public class ReportRegister {
 			instance = new ReportRegister();
 		}
 		return instance;
+	}
+
+	public boolean hasAtLeastOneVulnerableMessage() {
+		for (ReportClientHello report : clientHelloRegister) {
+			for (ReportMessage rm : report.getReportMessages()) {
+				if (rm.isTypeError()) {
+					return true;
+				}
+			}
+		}
+
+		for (ReportMessage message : certificateRegister) {
+			if (message.isTypeError()) {
+				return true;
+			}
+		}
+		
+		for (ReportMessage message : protocolRegister) {
+			if (message.isTypeError()) {
+				return true;
+			}
+		}
+		
+		return false;
+
 	}
 
 	public void addReportClientHello(ReportClientHello report) {
@@ -54,6 +84,14 @@ public class ReportRegister {
 
 	public List<ReportMessage> getReportsCertificate() {
 		return certificateRegister;
+	}
+
+	public void addReportProtocol(ReportMessage report) {
+		protocolRegister.add(report);
+	}
+
+	public List<ReportMessage> getReportsProtocol() {
+		return protocolRegister;
 	}
 
 }

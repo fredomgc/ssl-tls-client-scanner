@@ -38,6 +38,27 @@ public class HtmlExport extends BaseExport {
 		return Helper.getContentOfFile(ResourceManager.getHtmlTemplate());
 	}
 
+	private void groupReportClientHello(List<ReportClientHello> reportClientHello, StringBuilder sb) {
+		sb.append(String.format("<h2>Client Hello</h2>"));
+
+		List<ReportMessage> message = new ArrayList<>();
+		List<String> unique = new ArrayList<>();
+
+		for (ReportClientHello report : reportClientHello) {
+			for (ReportMessage rp : report.getReportMessages()) {
+				if (unique.contains(rp.getMessage())) {
+					continue; //we want only unique values
+				}
+
+				message.add(rp);
+				unique.add(rp.getMessage());
+			}
+		}
+
+		sb.append(doReport(message));
+
+	}
+
 	/**
 	 * Creates content of HTML export. This content may contains multiple scan
 	 * reports
@@ -47,7 +68,7 @@ public class HtmlExport extends BaseExport {
 	 * @return body of HTML file
 	 * @throws FileNotFoundException
 	 */
-	private String getContent(List<ReportMessage> messages, List<ReportClientHello> reportClientHello, Date timestampOfStart, Date timestampOfEnd) throws FileNotFoundException {
+	private String getContent(List<ReportMessage> messages, List<ReportClientHello> reportClientHello, List<ReportMessage> protocolMessages, List<ReportMessage> certificateMessages, Date timestampOfStart, Date timestampOfEnd) throws FileNotFoundException {
 		StringBuilder sb = new StringBuilder();
 		String timestampOfStartStr = Helper.getFormattedDateTime(timestampOfStart, false);
 		String timestampOfEndStr = Helper.getFormattedDateTime(timestampOfEnd, false);
@@ -64,9 +85,24 @@ public class HtmlExport extends BaseExport {
 		/**
 		 * Analysis of captured Client Hello(s)
 		 */
-		for (ReportClientHello report : reportClientHello) {
-			sb.append(String.format("<h2>Captured Client Hello #%s</h2>", report.getClientHelloId()));
-			sb.append(doReport(report.getReportMessages()));
+		if(!reportClientHello.isEmpty()){
+			groupReportClientHello(reportClientHello, sb);
+		}
+
+		/**
+		 * Protocol messages
+		 */
+		if (!protocolMessages.isEmpty()) {
+			sb.append(String.format("<h2>Protocol</h2>"));
+			sb.append(doReport(protocolMessages));
+		}
+
+		/**
+		 * Certificate messages
+		 */
+		if (!certificateMessages.isEmpty()) {
+			sb.append(String.format("<h2>Certificate</h2>"));
+			sb.append(doReport(certificateMessages));
 		}
 
 		String template = getTemplate();
@@ -83,8 +119,9 @@ public class HtmlExport extends BaseExport {
 	private String doReport(List<ReportMessage> messages) {
 		List<ReportMessage> protocol = new ArrayList<>();
 		List<ReportMessage> cipher = new ArrayList<>();
+		List<ReportMessage> certificate = new ArrayList<>();
 		List<ReportMessage> other = new ArrayList<>();
-
+		
 		for (ReportMessage reportMessage : messages) {
 			if (reportMessage.getCategory().equals(ReportMessage.Category.PROTOCOL)) {
 				protocol.add(reportMessage);
@@ -94,10 +131,13 @@ public class HtmlExport extends BaseExport {
 				cipher.add(reportMessage);
 			}
 
+			if (reportMessage.getCategory().equals(ReportMessage.Category.CERTIFICATE)) {
+				certificate.add(reportMessage);
+			}
+
 			if (reportMessage.getCategory().equals(ReportMessage.Category.OTHER)) {
 				other.add(reportMessage);
 			}
-
 		}
 
 		StringBuilder sb = new StringBuilder();
@@ -106,6 +146,7 @@ public class HtmlExport extends BaseExport {
 		sb.append("<tbody>");
 		sb.append(doCreateTableSegment("Protocols", protocol));
 		sb.append(doCreateTableSegment("Cipher suites", cipher));
+		sb.append(doCreateTableSegment("Certificates", certificate));
 		sb.append(doCreateTableSegment("Other", other));
 		sb.append("</tbody>");
 		sb.append("</table>");
@@ -169,18 +210,21 @@ public class HtmlExport extends BaseExport {
 	 * Exports collection of report messages to HTML file
 	 *
 	 * @param generalMessages collection of general report messages
-	 * @param reportClientHello collection of reports (each report for single Client Hello)
+	 * @param reportClientHello collection of reports (each report for single
+	 * Client Hello)
+	 * @param protocolMessages
+	 * @param certificateMessages
 	 * @param timestampOfStart timestamp of moment, when proxy server started
 	 * @return path to newly created HTMl file
 	 * @throws IOException in case of any error
 	 */
-	public String export(List<ReportMessage> generalMessages, List<ReportClientHello> reportClientHello, Date timestampOfStart) throws IOException {
+	public String export(List<ReportMessage> generalMessages, List<ReportClientHello> reportClientHello, List<ReportMessage> protocolMessages, List<ReportMessage> certificateMessages, Date timestampOfStart) throws IOException {
 		Date timestampOfEnd = new Date();
 		String timestampOfEndStr = Helper.getFormattedDateTime(timestampOfEnd, true);
 
 		File target = new File(Helper.getWorkingDirectory() + File.separator + "report_" + timestampOfEndStr + ".htm");
 		try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(target.getAbsolutePath()), "utf-8"))) {
-			writer.write(getContent(generalMessages, reportClientHello, timestampOfStart, timestampOfEnd));
+			writer.write(getContent(generalMessages, reportClientHello, protocolMessages, certificateMessages, timestampOfStart, timestampOfEnd));
 			writer.flush();
 			writer.close();
 		}
