@@ -43,11 +43,6 @@ import sun.security.ssl.Debug;
 public class ProxyServer {
 
 	/**
-	 * How many bytes is considered as "active communication"
-	 */
-	private static final int ACTIVE_COMMUNICATION_BYTES = 1500;
-
-	/**
 	 * Connection on the local port
 	 */
 	private Socket client = null;
@@ -96,9 +91,9 @@ public class ProxyServer {
 	 * Use secure (SSL/TLS) socket for communication with client?
 	 */
 	private boolean secureSocket = false;
-	
+
 	public void run() {
-		
+
 		Runnable r = () -> {
 			try {
 				running = true;
@@ -109,32 +104,32 @@ public class ProxyServer {
 				Log.debugException(ex);
 			}
 		};
-		
+
 		mainThred = new Thread(r);
 		mainThred.start();
 	}
-	
+
 	private synchronized void doRun() throws IOException, CertificateEncodingException {
 		int localPort = ConfigurationRegister.getInstance().getLocalPort();
 		int remotePort = ConfigurationRegister.getInstance().getRemotePort();
 		String remoteHost = ConfigurationRegister.getInstance().getRemoteHost();
-		
+
 		serverSocket = createServerSocket();
-		
+
 		final byte[] request = new byte[1024];
 		byte[] reply = new byte[4096 * 3];
-		
+
 		while (running) {
 			try {
-				try {	
-					
+				try {
+
 					client = serverSocket.accept();
 					addHandshakeCompletedListener(client);
-					
+
 				} catch (Exception e) {
-					
+
 				}
-				
+
 				if (client == null) {
 					continue;
 				}
@@ -153,7 +148,7 @@ public class ProxyServer {
 					String[] suites = server.getSupportedCipherSuites();
 					server.setEnabledCipherSuites(suites);
 					server.startHandshake();
-					
+
 					SSLSession session = server.getSession();
 
 					//System.err.println("Vzdalene pripojeno k: " + server.getRemoteSocketAddress());
@@ -202,7 +197,7 @@ public class ProxyServer {
 				// and pass them back to the client.
 				int bytesRead;
 				BufferedInputStream br = new BufferedInputStream(streamFromServer);
-				
+
 				try {
 					while ((bytesRead = br.read(reply, 0, reply.length)) != -1) {
 						//send everything we have to the client
@@ -232,17 +227,17 @@ public class ProxyServer {
 			}
 		}
 	}
-	
-	private void addHandshakeCompletedListener(Socket socket){
-		if(!(socket instanceof SSLSocket)){
+
+	private void addHandshakeCompletedListener(Socket socket) {
+		if (!(socket instanceof SSLSocket)) {
 			return;
 		}
-		
+
 		((SSLSocket) socket).addHandshakeCompletedListener((HandshakeCompletedEvent hce) -> {
 			succesfullHandshake = true;
 		});
 	}
-	
+
 	private ServerSocket createServerSocket() throws IOException {
 		int localPort = ConfigurationRegister.getInstance().getLocalPort();
 
@@ -260,54 +255,50 @@ public class ProxyServer {
 		if (socketFactory == null) {
 			throw new IllegalStateException("Can't continue with uninitialized ServerSocketFactory!");
 		}
-		
+
 		ServerSocket socket = (SSLServerSocket) socketFactory.createServerSocket(localPort);
 		((SSLServerSocket) socket).setEnabledProtocols(getTranslatedClientProtocol());
-		
+
 		return (SSLServerSocket) socket;
 	}
-	
+
 	private String[] getTranslatedClientProtocol() {
 		List<String> protocols = new ArrayList<>();
-		
+
 		switch (clientProtocol.getType()) {
 			case SSLv2:
 				protocols.add("SSLv2Hello");
 				protocols.add("SSLv3");
 				break;
-			
+
 			case SSLv3:
 				protocols.add("SSLv3");
 				break;
-			
+
 			case TLSv10:
 				protocols.add("TLSv1");
 				break;
-			
+
 			case TLSv11:
 				protocols.add("TLSv1.1");
 				break;
-			
+
 			case TLSv12:
 				protocols.add("TLSv1.2");
 				break;
-			
+
 			default:
 				protocols.add("TLSv1.2");
 				break;
 		}
-		
+
 		return protocols.toArray(new String[protocols.size()]);
 	}
-	
+
 	private void hijackStreamFromClient(byte[] request, String source) {
 		handleClientHello(request, source);
 	}
-	
-	private Payload hijackStreamFromServer(byte[] request, int bytesRead, String source) {
-		return handleCertificate(request, bytesRead);
-	}
-	
+
 	public void reload() {
 		try {
 			if (serverSocket != null) {
@@ -319,54 +310,26 @@ public class ProxyServer {
 			//Logger.getLogger(ProxyServer.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
-	
+
 	public void stop() {
 		try {
 			running = false;
-			
+
 			if (serverSocket != null) {
 				serverSocket.close();
 			}
-			
+
 			if (server != null) {
 				server.close();
 			}
-			
+
 			if (client != null) {
 				client.close();
 			}
-			
+
 		} catch (IOException ex) {
 			Log.debugException(ex);
 		}
-	}
-	
-	private Payload handleCertificate(byte[] bytes, int bytesRead) {
-		ServerCertificate.ServerCertificateCheck found = ServerCertificate.isServerCerfificate(bytes);
-		
-		if (found == ServerCertificate.NO_SERVER_CERTIFICATE) {
-			return new Payload(bytes, bytesRead);
-			//return ServerCertificate.NO_SERVER_CERTIFICATE; //nothing to do
-		}
-		
-		if (ConfigurationRegister.getInstance().isDebug()) {
-			Log.infoln(String.format("Captured certificate. Doing some changes. " + found.getEndIndex()));
-		}
-		
-		byte[] untouched = Arrays.copyOfRange(bytes, 0, found.getStartIndex() - 1);
-		byte[] certificate = Arrays.copyOfRange(bytes, found.getStartIndex(), found.getEndIndex());
-		byte[] rest = Arrays.copyOfRange(bytes, found.getEndIndex() + 1, bytes.length - bytesRead);
-
-		//System.err.println("Bytes read je: " + bytesRead + " pritom bytes ma velikost " + bytes.length);
-		//System.err.println("untouched je: " + untouched.length);
-		//System.err.println("certificate je: " + certificate.length);
-		//System.err.println("rest je: " + rest.length);
-		return new Payload(bytes, bytesRead);
-
-		//bytes = test;
-		//ServerCertificate serverCertificate = new ServerCertificate(found);
-		///Arrays.		
-		//tady zkusit zmenit odpoved serveru
 	}
 
 	/**
@@ -376,17 +339,17 @@ public class ProxyServer {
 	 * @param source source IP adress
 	 */
 	private void handleClientHello(byte[] bytes, String source) {
-		
+
 		if (!ClientHello.isClientHello(bytes)) {
 			return; //nothing to do
 		}
-		
+
 		if (ConfigurationRegister.getInstance().isDebug()) {
 			Log.infoln(String.format("Captured Client Hello from [%s], analysis started.", source));
 		}
-		
+
 		int clientHelloId = this.clientHelloCounter.incrementAndGet();
-		
+
 		ClientHello clientHello = new ClientHello(bytes);
 		ClientHelloScanner scanner = new ClientHelloScanner(clientHello);
 		ReportRegister.getInstance().addReportClientHello(new ReportClientHello(clientHelloId, scanner.getReportMessages()));
@@ -399,91 +362,125 @@ public class ProxyServer {
 	 */
 	public static boolean checkPort() {
 		int localPort = ConfigurationRegister.getInstance().getLocalPort();
-		
+
 		if (!Helper.isLocalPortAvailable(localPort)) {
 			Log.errorln(String.format("Port [%s] is already being used. Please specify different port.", localPort));
 			return false;
 		}
-		
+
 		return true;
+	}
+
+	public boolean isSecureSocket() {
+		return secureSocket;
+	}
+
+	public void setSecureSocket(boolean secureSocket) {
+		this.secureSocket = secureSocket;
 	}
 	
 	public void setClientProtocol(Protocol clientProtocol) {
 		this.clientProtocol = clientProtocol;
 	}
-	
+
 	public Protocol getClientProtocol() {
 		return this.clientProtocol;
 	}
-	
+
 	public void setConfigurationCertificate(ClientCertificate certificate) {
 		this.clientCertificate = certificate;
 	}
-	
+
 	public ClientCertificate getClientCertificate() {
 		return this.clientCertificate;
 	}
-	
+
+	/**
+	 * Starts certificate testing with the currently selected protocol and
+	 * certificate
+	 */
 	public void startCertificateTest() {
 		secureSocket = true;
 		succesfullHandshake = false;
 	}
-	
-	public void stopCertificateTest() {
+
+	/**
+	 * Stops certificate test and saves current result
+	 *
+	 * @return true, if handshake occured during testing, false otherwise
+	 */
+	public boolean stopCertificateTest() {
 		if (clientCertificate.getMode().isMustBe() && !succesfullHandshake) {
 			//add report
 			String message = String.format("Certificate named [%s] MUST BE supported, but there wasn't captured significant communication!", clientCertificate.getName());
 			ReportMessage rp = new ReportMessage(message, ReportMessage.Category.CERTIFICATE, clientCertificate.getMode(), ReportMessage.Type.ERROR);
 			ReportRegister.getInstance().addReportCertificate(rp);
 		}
-		
+
 		if (clientCertificate.getMode().isMustNotBe() && succesfullHandshake) {
 			//add report
 			String message = String.format("Certificate named [%s] MUST NOT BE supported, but there was captured significant communication!", clientCertificate.getName());
 			ReportMessage rp = new ReportMessage(message, ReportMessage.Category.CERTIFICATE, clientCertificate.getMode(), ReportMessage.Type.ERROR);
 			ReportRegister.getInstance().addReportCertificate(rp);
 		}
+
+		return succesfullHandshake;
 	}
-	
+
+	/**
+	 * Starts procotol testing with the currently selected protocol and
+	 * certificate
+	 */
 	public void startProtocolTest() {
 		secureSocket = true;
 		succesfullHandshake = false;
 	}
-	
-	public void stopProtocolTest() {
+
+	/**
+	 * Stops protocol test and saves current result
+	 *
+	 * @return true, if handshake occured during testing, false otherwise
+	 */
+	public boolean stopProtocolTest() {
 		if (clientProtocol.getMode().isMustBe() && !succesfullHandshake) {
-			//add report
 			String message = String.format("Protocol [%s] MUST BE supported, but there wasn't captured significant communication!", clientProtocol.getType());
 			ReportMessage rp = new ReportMessage(message, ReportMessage.Category.PROTOCOL, clientProtocol.getMode(), ReportMessage.Type.ERROR);
 			ReportRegister.getInstance().addReportProtocol(rp);
 		}
-		
+
 		if (clientProtocol.getMode().isMustNotBe() && succesfullHandshake) {
-			//add report
 			String message = String.format("Protocol [%s] MUST NOT BE supported, but there wasn captured significant communication!", clientProtocol.getType());
 			ReportMessage rp = new ReportMessage(message, ReportMessage.Category.PROTOCOL, clientProtocol.getMode(), ReportMessage.Type.ERROR);
 			ReportRegister.getInstance().addReportProtocol(rp);
 		}
+
+		return succesfullHandshake;
 	}
-	
+
+	/**
+	 * Creates SSLServerSocketFactory, that will be using custom certificate
+	 *
+	 * @param certificate certificate used to secure communication
+	 * @return a newly created factory
+	 */
 	public SSLServerSocketFactory createSSLServerSocketFactory(ClientCertificate certificate) {
-		
+
 		try {
 			KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
 			kmf.init(certificate.getKeystore(), certificate.getPassword().toCharArray());
-			
+
 			TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
 			tmf.init(certificate.getKeystore());
-			
+
 			SSLContext sslContext = SSLContext.getInstance("TLSv1.2"); //be aware, this value is not respected by JDK 
 
 			sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new java.security.SecureRandom());
-			
+
 			return sslContext.getServerSocketFactory();
 		} catch (Exception ex) {
 			Log.debugException(ex);
 			return null;
 		}
-		
+
 	}
 }

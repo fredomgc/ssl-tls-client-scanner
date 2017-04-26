@@ -29,8 +29,6 @@ public class Application {
 		Controller controller = new Controller();
 		try {
 			boolean safe = controller.run();
-			
-			System.err.println("Je to safe: " + safe);
 			System.exit(safe ? 0 : -1);
 		} catch (Exception ex) {
 			if (ConfigurationRegister.getInstance().isDebug()) {

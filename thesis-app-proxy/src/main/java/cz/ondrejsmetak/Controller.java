@@ -43,9 +43,10 @@ import javax.net.ssl.TrustManagerFactory;
  */
 public class Controller {
 
-	private static final String YOUR_CHOICE = "Type number of choice: ";
-
-	private static final int TEST_DELAY = 1000 * 10; //3O seconds
+	/**
+	 * Delay between tests
+	 */
+	private static final int TEST_DELAY = 1000 * 10; //1O seconds
 
 	/**
 	 * Proxy server
@@ -57,6 +58,9 @@ public class Controller {
 	 */
 	private Date timestampOfStart;
 
+	/**
+	 * Is infinite loop running?
+	 */
 	private boolean infiniteLoop = true;
 
 	/**
@@ -74,12 +78,15 @@ public class Controller {
 
 		scheduleTests();
 
-		doInfiniteLoop();
+		startInfiniteLoop();
 
 		return dispose();
 	}
 
-	private void doInfiniteLoop() {
+	/**
+	 * Starts the inifinite looú
+	 */
+	private void startInfiniteLoop() {
 		while (infiniteLoop) {
 
 			try {
@@ -90,28 +97,48 @@ public class Controller {
 		}
 	}
 
+	/**
+	 * Stops the infinite loop
+	 */
 	private void stopInfiniteLoop() {
 		infiniteLoop = false;
 	}
 
+	/**
+	 * Schedules all future tests
+	 */
 	private void scheduleTests() {
-		Log.infoln("Testing SSL/TLS Handshake.");
-		Log.infoln("Additional automatic testing will begin in " + TEST_DELAY / 1000 + " seconds.");
+		Log.infoln("Starting SSL/TLS Handshake test");
+
+		schedule(new TimerTask() {
+			@Override
+			public void run() {
+				Log.infoln("Stopped SSL/TLS Handshake test.");
+				proxy.setSecureSocket(true);
+				proxy.setClientProtocol(new Protocol(Protocol.Type.TLSv12));
+				proxy.setConfigurationCertificate(ConfigurationCertificateRegister.getInstance().getFirstMustBe());
+				proxy.reload();
+				
+			}
+		}, TEST_DELAY - 500);
 
 		
-		
-		scheduleTestsOfCertificates(() -> {
-				stopInfiniteLoop();
-		});
-		
 		/*
+		scheduleTestsOfCertificates(() -> {
+			stopInfiniteLoop();
+		});*/
 		scheduleTestsOfProtocols(() -> {
 			scheduleTestsOfCertificates(() -> {
 				stopInfiniteLoop();
 			});
-		});*/
+		});
 	}
 
+	/**
+	 * Schedules futures tests of all certificates specified by a user
+	 *
+	 * @param callback
+	 */
 	private void scheduleTestsOfProtocols(Runnable callback) {
 		int delay = TEST_DELAY;
 		int counter = 1;
@@ -128,8 +155,8 @@ public class Controller {
 				@Override
 				public void run() {
 					if (stopTest) {
-						Log.infoln("Stopped protocol test for [%s].", proxy.getClientProtocol());
-						proxy.stopProtocolTest();
+						Log.infoln("Stopped protocol test for [%s]. Handshake occured: [%s]",
+								proxy.getClientProtocol(), proxy.stopProtocolTest());
 					}
 
 					if (lastRun) {
@@ -150,6 +177,11 @@ public class Controller {
 
 	}
 
+	/**
+	 * Schedules futures tests of all certificates specified by a user
+	 *
+	 * @param callback
+	 */
 	private void scheduleTestsOfCertificates(Runnable callback) {
 		int delay = TEST_DELAY;
 		int counter = 1;
@@ -165,8 +197,8 @@ public class Controller {
 				@Override
 				public void run() {
 					if (stopTest) {
-						Log.infoln("Stopped certificate test for [%s].", proxy.getClientCertificate().getName());
-						proxy.stopCertificateTest();
+						Log.infoln("Stopped certificate test for [%s]. Handshake occured: [%s]",
+								proxy.getClientCertificate().getName(), proxy.stopCertificateTest());
 					}
 
 					if (lastRun) {
@@ -186,23 +218,14 @@ public class Controller {
 		}
 	}
 
+	/**
+	 * Schedules execution of the given TimerTask after specified delay
+	 *
+	 * @param task task that will be executed
+	 * @param delay specified delay
+	 */
 	private void schedule(TimerTask task, int delay) {
 		new Timer().schedule(task, delay);
-	}
-
-	/**
-	 * Ugly and deprecated?
-	 *
-	 * @param title
-	 * @return
-	 */
-	private String createTitleInHeader(String title) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("########################################").append("\n");
-		sb.append("# ").append(title).append("\n");
-		sb.append("########################################").append("\n");
-
-		return sb.toString();
 	}
 
 	/**
@@ -253,11 +276,8 @@ public class Controller {
 		proxy.run();
 		timestampOfStart = new Date();
 		Log.infoln("MiTM proxy is up and running on the port " + ConfigurationRegister.getInstance().getLocalPort() + ".");
+		Log.infoln("Starting automated testing. Each test takes around " + TEST_DELAY / 1000 + " seconds.");
 		return true;
-	}
-
-	private void printCurrentState() {
-		Log.infoln("Protocol: " + proxy.getClientProtocol() + ", Certificate: " + proxy.getClientCertificate().getName());
 	}
 
 	/**
@@ -314,14 +334,25 @@ public class Controller {
 		return done;
 	}
 
+	/**
+	 * Returns collection of report messages (regarding protocol tests), that
+	 * will be contained in HTML export
+	 *
+	 * @return collection of report messages
+	 */
 	private List<ReportMessage> getReportProtocol() {
 		return ReportRegister.getInstance().getReportsProtocol();
 	}
-	
+
+	/**
+	 * Returns collection of report messages (regarding certificate tests), that
+	 * will be contained in HTML export
+	 *
+	 * @return collection of report messages
+	 */
 	private List<ReportMessage> getReportCertificate() {
 		return ReportRegister.getInstance().getReportsCertificate();
 	}
-	
 
 	/**
 	 * Executes HTML export
@@ -329,137 +360,15 @@ public class Controller {
 	 * @throws IOException in case of any error
 	 */
 	private void doHtmlExport() throws IOException {
-
 		HtmlExport export = new HtmlExport();
 		String path = export.export(getReportMessages(), getReportClientHello(), getReportProtocol(), getReportCertificate(), timestampOfStart);
-
 		Log.infoln("Log saved in " + path);
 	}
 
-	///////////////////////////////////////////////
-	///////////////////////////////////////////////
-	///////////////////////////////////////////////
-	///////////////////////////////////////////////
-	///////////////////////////////////////////////
-	///////////////////////////////////////////////
-	///////////////////////////////////////////////
-	///////////////////////////////////////////////
-	///////////////////////////////////////////////
 	/**
-	 * Returns text header of console based menu
-	 *
-	 * @return header of console based menu
+	 * Prints current state of proxy server. Currently unused.
 	 */
-	private String getMenuHeader() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("SSL/TLS proxy server is running on port ").append(ConfigurationRegister.getInstance().getLocalPort()).append(".").append("\n");
-		sb.append("Available choices: ").append("\n");
-		sb.append("0) Shutdown proxy sever and save log of captured events").append("\n");
-		sb.append("1) Change keystore").append("\n");
-		sb.append("\n");
-		return sb.toString();
+	private void printCurrentState() {
+		Log.infoln("Protocol: " + proxy.getClientProtocol() + ", Certificate: " + proxy.getClientCertificate().getName());
 	}
-
-	/**
-	 * Prints and hanles console based menu
-	 */
-	private void doMenu() {
-		boolean headerPrinted = false;
-		try (Scanner scanner = new Scanner(System.in)) {
-			String userInput = null;
-
-			while (!"0".equals(userInput)) {
-				if (!headerPrinted) {
-					System.out.print(getMenuHeader());
-					headerPrinted = true;
-				}
-				System.out.print(YOUR_CHOICE);
-
-				userInput = scanner.nextLine();
-				if ("0".equals(userInput)) {
-					/*do something before application exit ?*/
-				} else if ("1".equals(userInput)) {
-					System.out.println("Select KeyStore (" + ConfigurationCertificateRegister.getInstance().getSize() + " available): ");
-					Pair<ClientCertificate, String> selected = doConfigurationCertificate(scanner);
-					System.out.println(selected.getRight());
-					System.out.println("===");
-					headerPrinted = false;
-
-					//todo
-					//ProxyServer.keystoreOld = "two";
-					proxy.reload();
-
-//					System.setProperty("javax.net.ssl.keyStore", "/home/fredomgc/Plocha/keystore/mySrvKeystore2");
-//					System.setProperty("javax.net.ssl.keyStorePassword", "lollol");
-//
-//					System.out.print("KeyStore changed");
-//
-//					System.err.println("A: " + HttpsURLConnection.getDefaultSSLSocketFactory());
-//					
-//					KeyStore ts;
-//					try {
-//						ts = KeyStore.getInstance("JKS");
-//
-//						ts.load(new FileInputStream(new File("/home/fredomgc/Plocha/keystore/mySrvKeystore2")), "lollol".toCharArray());
-//
-//						KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-//						kmf.init(ts, "lollol".toCharArray());
-//						
-//						TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-//						tmf.init(ts);
-//
-//						SSLContext sslContext = SSLContext.getInstance("TLS");
-//						sslContext.init(kmf.getKeyManagers(), tmf.getTrustManagers(), null);
-//
-//						HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
-//						
-//						//ProxyServer.custom = sslContext.getServerSocketFactory();
-//						
-//						//SSLSocketFactory
-//						//sslContext.getSocketFactory().
-//						
-//						
-//					} catch (Exception ex) {
-//						ex.printStackTrace();
-//					}
-//
-//					proxy.stop();
-//					//proxy.reload();
-//					
-//					proxy.run();
-					userInput = null;
-				} else {
-					System.out.println("Unrecognized input. You must type supported integer value!");
-					userInput = null;
-				}
-			}
-		}
-	}
-
-	private Pair<ClientCertificate, String> doConfigurationCertificate(Scanner scanner) {
-		HashMap<Integer, ClientCertificate> converter = new HashMap<>();
-
-		System.out.println("0) go back without any change");
-
-		int index = 1;
-		for (ClientCertificate certificate : ConfigurationCertificateRegister.getInstance().getConfigurationCertificates()) {
-			System.out.println(index + ") " + certificate.getName());
-
-			converter.put(index, certificate);
-			index++;
-		}
-
-		System.out.print(YOUR_CHOICE);
-		String userInput = scanner.nextLine();
-		if (Helper.isInteger(userInput) && converter.get(Integer.parseInt(userInput)) != null) {
-			return Pair.createPair(converter.get(Integer.parseInt(userInput)), "KeyStore selected");
-		}
-
-		if (userInput.equals("0")) {
-			return Pair.createPair(null, "Returned back");
-		}
-
-		return Pair.createPair(null, "Unrecognized input");
-	}
-
 }
