@@ -94,11 +94,11 @@ public class Controller {
 			}
 
 			//SSL/TLS certificates
-			for (ClientCertificate certificate : ConfigurationCertificateRegister.getInstance().getConfigurationCertificatesIndexable()) {
-				t = new Thread(new TestCertificate(certificate));
-				t.start();
-				t.join();
-			}
+			//for (ClientCertificate certificate : ConfigurationCertificateRegister.getInstance().getConfigurationCertificatesIndexable()) {
+			//	t = new Thread(new TestCertificate(certificate));
+			//	t.start();
+			//	t.join();
+			//}
 
 		} catch (InterruptedException ex) {
 			Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
@@ -309,6 +309,7 @@ public class Controller {
 			if (!run) {
 				Log.infoln("Stopped protocol test for [%s]. Communication occured, handshake occured: [%s]", protocol, proxy.stopProtocolTest());
 			} else {
+				proxy.stopProtocolTest();
 				Log.infoln("Stopped protocol test for [%s]. No communication occured.", protocol);
 			}
 		}
@@ -348,6 +349,7 @@ public class Controller {
 			if (!run) {
 				Log.infoln("Stopped certificate test for [%s]. Communication occured, handshake occured: [%s]", certificate.getName(), proxy.stopCertificateTest());
 			} else {
+				proxy.stopCertificateTest();
 				Log.infoln("Stopped protocol test for [%s]. No communication occured.", certificate.getName());
 			}
 		}

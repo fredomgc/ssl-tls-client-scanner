@@ -3,16 +3,16 @@
 	<directives>
 		<directive name="debug" value="true" />
 		<directive name="localPort" value="2222" />
-		<directive name="remoteHost" value="seznam.cz" />
+		<directive name="remoteHost" value="google.com" />
 		<directive name="remotePort" value="443" />
 		
 	</directives>
 	
 	<protocols>
-		<protocol name="SSLv2" mode="canBe" />
+		<protocol name="SSLv2" mode="mustNotBe" />
 		<protocol name="SSLv3" mode="mustNotBe" />
-		<protocol name="TLS 1.0" mode="canBe" />
-		<protocol name="TLS 1.1" mode="canBe" />
+		<protocol name="TLS 1.0" mode="mustNotBe" />
+		<protocol name="TLS 1.1" mode="mustNotBe" />
 		<protocol name="TLS 1.2" mode="mustBe" />
 	</protocols>
 	

@@ -76,6 +76,12 @@ public class ProxyServer {
 	 * Was there succesfull SSL/TLS handshake during communication with client?
 	 */
 	private boolean succesfullHandshake = false;
+	
+	/**
+	 * Was there any SSL/TLS communication with client?
+	 */
+	private boolean succesfullCommunication = false;
+	
 
 	/**
 	 * Use secure (SSL/TLS) socket for communication with client?
@@ -85,16 +91,27 @@ public class ProxyServer {
 	/**
 	 * Collection of subscribers, that are expecting our messages
 	 */
-	private List<Observer> subscribers = new ArrayList<>();
+	private final List<Observer> subscribers = new ArrayList<>();
 
+	/**
+	 * Message sent to the subscribers
+	 */
 	public static final int MESSAGE_COMMUNICATION_OCCURED = 1;
 
+	/**
+	 * Add new subrsciber, that want's to receive messages
+	 * @param subscriber 
+	 */
 	public void addSingleSubscriber(Observer subscriber) {
 		subscribers.clear();
 		subscribers.add(subscriber);
 	}
 
-	public void notifySubscribers(int message) {
+	/**
+	 * Notify subscribers with the given message
+	 * @param message 
+	 */
+	private void notifySubscribers(int message) {
 		for (Observer subscriber : subscribers) {
 			subscriber.update(null, message);
 		}
@@ -118,8 +135,6 @@ public class ProxyServer {
 	}
 
 	private synchronized void doRun() throws IOException, CertificateEncodingException {
-		int localPort = ConfigurationRegister.getInstance().getLocalPort();
-		int remotePort = ConfigurationRegister.getInstance().getRemotePort();
 		String remoteHost = ConfigurationRegister.getInstance().getRemoteHost();
 
 		serverSocket = createServerSocket();
@@ -130,10 +145,11 @@ public class ProxyServer {
 		while (running) {
 			try {
 				try {
-
 					client = serverSocket.accept();
+					succesfullCommunication = true;
 					addHandshakeCompletedListener(client);
-
+					notifySubscribers(MESSAGE_COMMUNICATION_OCCURED);
+					
 				} catch (Exception e) {
 
 				}
@@ -142,6 +158,11 @@ public class ProxyServer {
 					continue;
 				}
 
+				if (client.isClosed()) {
+					continue;
+				}
+
+				
 				final InputStream streamFromClient = client.getInputStream();
 				final OutputStream streamToClient = client.getOutputStream();
 
@@ -243,7 +264,6 @@ public class ProxyServer {
 
 		((SSLSocket) socket).addHandshakeCompletedListener((HandshakeCompletedEvent hce) -> {
 			succesfullHandshake = true;
-			notifySubscribers(MESSAGE_COMMUNICATION_OCCURED);
 		});
 	}
 
@@ -362,8 +382,6 @@ public class ProxyServer {
 		ClientHello clientHello = new ClientHello(bytes);
 		ClientHelloScanner scanner = new ClientHelloScanner(clientHello);
 		ReportRegister.getInstance().addReportClientHello(new ReportClientHello(clientHelloId, scanner.getReportMessages()));
-
-		notifySubscribers(MESSAGE_COMMUNICATION_OCCURED);
 	}
 
 	/**
@@ -413,6 +431,7 @@ public class ProxyServer {
 	public void startCertificateTest() {
 		secureSocket = true;
 		succesfullHandshake = false;
+		succesfullCommunication = false;
 	}
 
 	/**
@@ -421,16 +440,24 @@ public class ProxyServer {
 	 * @return true, if handshake occured during testing, false otherwise
 	 */
 	public boolean stopCertificateTest() {
+		//not even communication
+		if(!succesfullCommunication && clientCertificate.getMode().isMustBeOrMustNotBe()){
+			String message = String.format("Certificate named [%s] %s supported, but there wasn't captured any communication to determine!", clientCertificate.getName(), clientCertificate.getMode());
+			ReportMessage rp = new ReportMessage(message, ReportMessage.Category.CERTIFICATE, clientCertificate.getMode(), ReportMessage.Type.ERROR);
+			ReportRegister.getInstance().addReportCertificate(rp);
+			return false;
+		}
+		
 		if (clientCertificate.getMode().isMustBe() && !succesfullHandshake) {
 			//add report
-			String message = String.format("Certificate named [%s] MUST BE supported, but there wasn't captured significant communication!", clientCertificate.getName());
+			String message = String.format("Certificate named [%s] MUST BE supported, but there wasn't captured succesfull handshake!", clientCertificate.getName());
 			ReportMessage rp = new ReportMessage(message, ReportMessage.Category.CERTIFICATE, clientCertificate.getMode(), ReportMessage.Type.ERROR);
 			ReportRegister.getInstance().addReportCertificate(rp);
 		}
 
 		if (clientCertificate.getMode().isMustNotBe() && succesfullHandshake) {
 			//add report
-			String message = String.format("Certificate named [%s] MUST NOT BE supported, but there was captured significant communication!", clientCertificate.getName());
+			String message = String.format("Certificate named [%s] MUST NOT BE supported, but there was captured succesfull communication!", clientCertificate.getName());
 			ReportMessage rp = new ReportMessage(message, ReportMessage.Category.CERTIFICATE, clientCertificate.getMode(), ReportMessage.Type.ERROR);
 			ReportRegister.getInstance().addReportCertificate(rp);
 		}
@@ -445,6 +472,7 @@ public class ProxyServer {
 	public void startProtocolTest() {
 		secureSocket = true;
 		succesfullHandshake = false;
+		succesfullCommunication = false;
 	}
 
 	/**
@@ -453,6 +481,14 @@ public class ProxyServer {
 	 * @return true, if handshake occured during testing, false otherwise
 	 */
 	public boolean stopProtocolTest() {
+		//not even communication
+		if(!succesfullCommunication && clientProtocol.getMode().isMustBeOrMustNotBe()){
+			String message = String.format("Protocol [%s] %s supported, but there wasn't captured any communication to determine!", clientProtocol.getType(), clientProtocol.getMode());
+			ReportMessage rp = new ReportMessage(message, ReportMessage.Category.PROTOCOL, clientProtocol.getMode(), ReportMessage.Type.ERROR);
+			ReportRegister.getInstance().addReportCertificate(rp);
+			return false;
+		}
+		
 		if (clientProtocol.getMode().isMustBe() && !succesfullHandshake) {
 			String message = String.format("Protocol [%s] MUST BE supported, but there wasn't captured significant communication!", clientProtocol.getType());
 			ReportMessage rp = new ReportMessage(message, ReportMessage.Category.PROTOCOL, clientProtocol.getMode(), ReportMessage.Type.ERROR);
