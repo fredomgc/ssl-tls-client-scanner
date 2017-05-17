@@ -2,39 +2,29 @@ package cz.ondrejsmetak;
 
 import cz.ondrejsmetak.entity.ClientHello;
 import cz.ondrejsmetak.entity.ClientCertificate;
-import cz.ondrejsmetak.entity.Payload;
 import cz.ondrejsmetak.entity.Protocol;
 import cz.ondrejsmetak.entity.ReportClientHello;
 import cz.ondrejsmetak.entity.ReportMessage;
-import cz.ondrejsmetak.entity.ServerCertificate;
 import cz.ondrejsmetak.scanner.ClientHelloScanner;
 import cz.ondrejsmetak.tool.Helper;
 import cz.ondrejsmetak.tool.Log;
 import java.io.*;
 import java.net.*;
-import java.security.KeyStore;
 import java.security.cert.CertificateEncodingException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.net.ServerSocketFactory;
 import javax.net.ssl.HandshakeCompletedEvent;
-import javax.net.ssl.HandshakeCompletedListener;
-import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
-import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
-import sun.security.ssl.Debug;
 
 /**
  *
@@ -92,6 +82,24 @@ public class ProxyServer {
 	 */
 	private boolean secureSocket = false;
 
+	/**
+	 * Collection of subscribers, that are expecting our messages
+	 */
+	private List<Observer> subscribers = new ArrayList<>();
+
+	public static final int MESSAGE_COMMUNICATION_OCCURED = 1;
+
+	public void addSingleSubscriber(Observer subscriber) {
+		subscribers.clear();
+		subscribers.add(subscriber);
+	}
+
+	public void notifySubscribers(int message) {
+		for (Observer subscriber : subscribers) {
+			subscriber.update(null, message);
+		}
+	}
+
 	public void run() {
 
 		Runnable r = () -> {
@@ -133,7 +141,7 @@ public class ProxyServer {
 				if (client == null) {
 					continue;
 				}
-				
+
 				final InputStream streamFromClient = client.getInputStream();
 				final OutputStream streamToClient = client.getOutputStream();
 
@@ -235,6 +243,7 @@ public class ProxyServer {
 
 		((SSLSocket) socket).addHandshakeCompletedListener((HandshakeCompletedEvent hce) -> {
 			succesfullHandshake = true;
+			notifySubscribers(MESSAGE_COMMUNICATION_OCCURED);
 		});
 	}
 
@@ -353,6 +362,8 @@ public class ProxyServer {
 		ClientHello clientHello = new ClientHello(bytes);
 		ClientHelloScanner scanner = new ClientHelloScanner(clientHello);
 		ReportRegister.getInstance().addReportClientHello(new ReportClientHello(clientHelloId, scanner.getReportMessages()));
+
+		notifySubscribers(MESSAGE_COMMUNICATION_OCCURED);
 	}
 
 	/**
@@ -378,7 +389,7 @@ public class ProxyServer {
 	public void setSecureSocket(boolean secureSocket) {
 		this.secureSocket = secureSocket;
 	}
-	
+
 	public void setClientProtocol(Protocol clientProtocol) {
 		this.clientProtocol = clientProtocol;
 	}

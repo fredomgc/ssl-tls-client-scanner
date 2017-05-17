@@ -26,6 +26,8 @@ public class Application {
 			} else {
 				Log.errorln(ex);
 			}
+		} finally {
+			System.exit(-1);
 		}
 	}
 
