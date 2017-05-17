@@ -36,7 +36,7 @@
 	
 	<certificates>
 		<certificate name="MusiProjit" mode="mustBe" path="one.jks" password="lollol" />
-		<certificate name="NesmiProjit" mode="mustNotBe" path="two.jks" password="lollol" />
+		<certificate name="NesmiProjit" mode="mustBe" path="two.jks" password="lollol" />
 	</certificates>
 	
 	<other>

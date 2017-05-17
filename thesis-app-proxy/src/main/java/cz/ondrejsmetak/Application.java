@@ -1,17 +1,6 @@
 package cz.ondrejsmetak;
 
 import cz.ondrejsmetak.tool.Log;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.security.Provider;
-import java.security.Security;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.net.ServerSocketFactory;
-import javax.net.ssl.SSLServerSocket;
-import javax.net.ssl.SSLServerSocketFactory;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
 
 /**
  * Main application class
@@ -26,7 +15,8 @@ public class Application {
 	 * @param args arguments from command line
 	 */
 	public static void main(String[] args) {
-		Controller controller = new Controller();
+
+		Controller controller = new Controller(parseConfigurationFileName(args));
 		try {
 			boolean safe = controller.run();
 			System.exit(safe ? 0 : -1);
@@ -37,6 +27,25 @@ public class Application {
 				Log.errorln(ex);
 			}
 		}
+	}
+
+	/**
+	 * Attempts to find command line argument, that specifies configuration file
+	 *
+	 *
+	 * @param args array of command line arguments
+	 * @return name of the configuration file or null, if not found
+	 */
+	private static String parseConfigurationFileName(String[] args) {
+		if (args.length >= 2) {
+			throw new IllegalArgumentException("Too many command line arguments.");
+		}
+
+		if (args.length == 0) {
+			return null;
+		}
+
+		return args[0];
 	}
 
 }

@@ -21,7 +21,7 @@ public abstract class BaseParser {
 
 	public abstract void createDefault() throws IOException;
 
-	public abstract boolean hasFile();
+	public abstract boolean hasDefaultFile();
 
 	/**
 	 * Parse mode from string value

@@ -1,6 +1,5 @@
 package cz.ondrejsmetak.parser;
 
-import cz.ondrejsmetak.parser.BaseParser;
 import cz.ondrejsmetak.CipherSuiteRegister;
 import cz.ondrejsmetak.ConfigurationCertificateRegister;
 import cz.ondrejsmetak.ConfigurationRegister;
@@ -34,7 +33,9 @@ import org.xml.sax.SAXException;
  */
 public class ConfigurationParser extends BaseParser {
 
-	public static final String FILE = "configuration.xml";
+	public static final String DEFAULT_FILE = "configuration.xml";
+
+	private String configurationFileName = null;
 
 	private static final String TAG_CONFIGURATION = "configuration";
 	private static final String TAG_DIRECTIVES = "directives";
@@ -54,16 +55,31 @@ public class ConfigurationParser extends BaseParser {
 	private static final String ATTRIBUTE_PATH = "path";
 	private static final String ATTRIBUTE_PASSWORD = "password";
 
+	/**
+	 * Creates a new ConfigurationParser for the given configuration file
+	 *
+	 * If the given configuration file is NULL, default value is being used
+	 *
+	 * @param configurationFileName
+	 */
+	public ConfigurationParser(String configurationFileName) {
+		this.configurationFileName = (configurationFileName == null) ? DEFAULT_FILE : configurationFileName;
+	}
+
+	public String getConfigurationFileName() {
+		return configurationFileName;
+	}
+
 	@Override
 	public void createDefault() throws IOException {
 		InputStream source = ResourceManager.getDefaultConfigurationXml();
-		Path destination = new File(FILE).toPath();
+		Path destination = new File(DEFAULT_FILE).toPath();
 		Files.copy(source, destination);
 	}
 
 	@Override
-	public boolean hasFile() {
-		return Files.exists(new File(FILE).toPath());
+	public boolean hasDefaultFile() {
+		return Files.exists(new File(DEFAULT_FILE).toPath());
 	}
 
 	/**
@@ -121,6 +137,12 @@ public class ConfigurationParser extends BaseParser {
 		}
 	}
 
+	private void checkConfigurationFileExists() throws XmlParserException {
+		if (!Files.exists(new File(configurationFileName).toPath())) {
+			throw new XmlParserException(String.format("Can't find given configuration file [%s].", configurationFileName));
+		}
+	}
+
 	/**
 	 * Parse configuration file and store directives
 	 *
@@ -128,7 +150,9 @@ public class ConfigurationParser extends BaseParser {
 	 */
 	public void parse() throws XmlParserException {
 		try {
-			File fXmlFile = new File(FILE);
+			checkConfigurationFileExists();
+			
+			File fXmlFile = new File(this.configurationFileName);
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			Document doc = db.parse(fXmlFile);

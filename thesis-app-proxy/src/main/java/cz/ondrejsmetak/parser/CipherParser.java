@@ -44,7 +44,7 @@ public class CipherParser extends BaseParser {
 	}
 
 	@Override
-	public boolean hasFile() {
+	public boolean hasDefaultFile() {
 		return true; //always true, because file is part of resources
 	}
 

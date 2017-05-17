@@ -1,31 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 	<directives>
-		<directive name="debug" value="true" />
-		<directive name="port" value="6880" />
+		<directive name="debug" value="false" />
+		<directive name="localPort" value="2222" />
+		<directive name="remoteHost" value="domain.tld" />
+		<directive name="remotePort" value="443" />
 	</directives>
 	
 	<protocols>
-		<highestSupportedProtocol name="TLS 1.2"  mode="mustBe" />
+		<protocol name="SSLv2" mode="mustNotBe" />
+		<protocol name="SSLv3" mode="mustNotBe" />
+		<protocol name="TLS 1.0" mode="canBe" />
+		<protocol name="TLS 1.1" mode="mustBe" />
+		<protocol name="TLS 1.2" mode="mustBe" />
 	</protocols>
 	
 	<cipherSuites>
-		<cipherSuite hexValue="c02b" name="TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256" mode="mustNotBe" />
-		<cipherSuite hexValue="c02f" name="TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256" mode="mustBe" />
-		<cipherSuite hexValue="cca9" name="TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256" mode="mustBe" />
-		<cipherSuite hexValue="cca8" name="TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256" mode="mustBe" />
-		<cipherSuite hexValue="c02c" name="TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384" mode="mustBe" />
-		<cipherSuite hexValue="c030" name="TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384" mode="mustBe" />
-		<cipherSuite hexValue="c00a" name="TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA" mode="mustBe" />
-		<cipherSuite hexValue="c009" name="TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA" mode="mustBe" />
-		<cipherSuite hexValue="c013" name="TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA" mode="mustBe" />
-		<cipherSuite hexValue="c014" name="TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA" mode="mustBe" />
-		<cipherSuite hexValue="0033" name="TLS_DHE_RSA_WITH_AES_128_CBC_SHA" mode="mustBe" />
-		<cipherSuite hexValue="0039" name="TLS_DHE_RSA_WITH_AES_256_CBC_SHA" mode="mustBe" />
-		<cipherSuite hexValue="002f" name="TLS_RSA_WITH_AES_128_CBC_SHA" mode="mustBe" />
-		<cipherSuite hexValue="0035" name="TLS_RSA_WITH_AES_256_CBC_SHA" mode="mustBe" />
-		<cipherSuite hexValue="000a" name="TLS_RSA_WITH_3DES_EDE_CBC_SHA" mode="mustBe" />
+		<cipherSuite name="TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256" mode="mustBe" />
 	</cipherSuites>
+	
+	<certificates>
+		<certificate name="Name #1" mode="mustBe" path="/path/to/keystore1.jks" password="password1" />
+		<certificate name="Name #2" mode="mustNotBe" path="/path/to/keystore2.jks" password="password2" />
+	</certificates>
 	
 	<other>
 		<tlsFallbackScsv mode="canBe" />

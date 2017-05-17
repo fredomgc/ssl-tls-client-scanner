@@ -9,32 +9,16 @@ import cz.ondrejsmetak.export.HtmlExport;
 import cz.ondrejsmetak.other.XmlParserException;
 import cz.ondrejsmetak.parser.CipherParser;
 import cz.ondrejsmetak.parser.ConfigurationParser;
-import cz.ondrejsmetak.tool.Helper;
 import cz.ondrejsmetak.tool.Log;
-import cz.ondrejsmetak.tool.Pair;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
 
 /**
  * Main controller of application
@@ -51,7 +35,7 @@ public class Controller {
 	/**
 	 * Proxy server
 	 */
-	private ProxyServer proxy = new ProxyServer();
+	private final ProxyServer proxy = new ProxyServer();
 
 	/**
 	 * Timestamp of moment, when proxy server started
@@ -62,6 +46,12 @@ public class Controller {
 	 * Is infinite loop running?
 	 */
 	private boolean infiniteLoop = true;
+	
+	private String configurationFileName = null;
+	
+	public Controller(String configurationFileName) {
+		this.configurationFileName = configurationFileName;
+	}
 
 	/**
 	 * Run a whole life cycle of application
@@ -75,11 +65,11 @@ public class Controller {
 		if (!ok) {
 			return false;
 		}
-
+		
 		scheduleTests();
-
+		
 		startInfiniteLoop();
-
+		
 		return dispose();
 	}
 
@@ -88,7 +78,7 @@ public class Controller {
 	 */
 	private void startInfiniteLoop() {
 		while (infiniteLoop) {
-
+			
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException ex) {
@@ -109,7 +99,7 @@ public class Controller {
 	 */
 	private void scheduleTests() {
 		Log.infoln("Starting SSL/TLS Handshake test");
-
+		
 		schedule(new TimerTask() {
 			@Override
 			public void run() {
@@ -122,7 +112,6 @@ public class Controller {
 			}
 		}, TEST_DELAY - 500);
 
-		
 		/*
 		scheduleTestsOfCertificates(() -> {
 			stopInfiniteLoop();
@@ -142,15 +131,15 @@ public class Controller {
 	private void scheduleTestsOfProtocols(Runnable callback) {
 		int delay = TEST_DELAY;
 		int counter = 1;
-
+		
 		List<Protocol> protocols = ConfigurationRegister.getInstance().getProtocols();
-
+		
 		for (int i = 0; i < protocols.size() + 1; i++) {
 			final boolean stopTest = (i > 0);
 			final boolean scheduleNext = (i < protocols.size());
 			final boolean lastRun = (i == protocols.size());
 			final Protocol protocol = scheduleNext ? protocols.get(i) : null;
-
+			
 			schedule(new TimerTask() {
 				@Override
 				public void run() {
@@ -158,11 +147,11 @@ public class Controller {
 						Log.infoln("Stopped protocol test for [%s]. Handshake occured: [%s]",
 								proxy.getClientProtocol(), proxy.stopProtocolTest());
 					}
-
+					
 					if (lastRun) {
 						callback.run();
 					}
-
+					
 					if (scheduleNext) {
 						Log.infoln("Starting protocol test for [%s].", protocol);
 						proxy.setClientProtocol(protocol);
@@ -171,10 +160,10 @@ public class Controller {
 					}
 				}
 			}, delay);
-
+			
 			delay = TEST_DELAY * ++counter;
 		}
-
+		
 	}
 
 	/**
@@ -186,13 +175,13 @@ public class Controller {
 		int delay = TEST_DELAY;
 		int counter = 1;
 		ArrayList<ClientCertificate> certificates = ConfigurationCertificateRegister.getInstance().getConfigurationCertificatesIndexable();
-
+		
 		for (int i = 0; i < certificates.size() + 1; i++) {
 			final boolean stopTest = (i > 0);
 			final boolean scheduleNext = (i < certificates.size());
 			final boolean lastRun = (i == certificates.size());
 			final ClientCertificate certificate = scheduleNext ? certificates.get(i) : null;
-
+			
 			schedule(new TimerTask() {
 				@Override
 				public void run() {
@@ -200,11 +189,11 @@ public class Controller {
 						Log.infoln("Stopped certificate test for [%s]. Handshake occured: [%s]",
 								proxy.getClientCertificate().getName(), proxy.stopCertificateTest());
 					}
-
+					
 					if (lastRun) {
 						callback.run();
 					}
-
+					
 					if (scheduleNext) {
 						Log.infoln("Starting certificate test for [%s].", certificate.getName());
 						proxy.setConfigurationCertificate(certificate);
@@ -213,7 +202,7 @@ public class Controller {
 					}
 				}
 			}, delay);
-
+			
 			delay = TEST_DELAY * ++counter;
 		}
 	}
@@ -235,43 +224,43 @@ public class Controller {
 	 * @throws XmlParserException in case of any error
 	 */
 	private boolean startup() throws XmlParserException, IOException {
-		ConfigurationParser configurationParser = new ConfigurationParser();
+		ConfigurationParser configurationParser = new ConfigurationParser(configurationFileName);
 		CipherParser cipherParser = new CipherParser();
-
+		
 		boolean stop = false;
-
-		if (!configurationParser.hasFile()) {
+		
+		if (configurationFileName == null && !configurationParser.hasDefaultFile()) {
 			configurationParser.createDefault();
-			Log.infoln("Creating default " + ConfigurationParser.FILE + " in application folder.");
+			Log.infoln("Creating default " + ConfigurationParser.DEFAULT_FILE + " in application folder.");
 			Log.infoln("Please review configuration in XML file and run application again.");
 			stop = true;
 		}
-
+		
 		if (stop) {
 			return false;
 		}
-
+		
 		cipherParser.parse();
-
-		Log.infoln("Parsing " + ConfigurationParser.FILE + " for application configuration.");
+		
+		Log.infoln("Parsing " + configurationParser.getConfigurationFileName() + " for application configuration.");
 		configurationParser.parse();
-
+		
 		if (!ConfigurationCertificateRegister.getInstance().hasAtLeastOneMustBe()) {
 			Log.errorln("You must specify at least one certificate with mode MUST BE (will be used during initial communication)!");
 			return false;
 		}
-
+		
 		List<String> missingDirectives = ConfigurationRegister.getInstance().getMissingDirectives();
 		if (!missingDirectives.isEmpty()) {
 			Log.errorln("Following configurationd directives are missing " + missingDirectives + ", can't continue without them!");
 			return false;
 		}
-
+		
 		boolean ok = ProxyServer.checkPort();
 		if (!ok) {
 			return false;
 		}
-
+		
 		proxy.setConfigurationCertificate(ConfigurationCertificateRegister.getInstance().getFirstMustBe());
 		proxy.run();
 		timestampOfStart = new Date();
@@ -291,9 +280,9 @@ public class Controller {
 		Log.infoln("Shutting down proxy server...");
 		proxy.stop();
 		Log.infoln("Proxy server closed.");
-
+		
 		doHtmlExport();
-
+		
 		return !ReportRegister.getInstance().hasAtLeastOneVulnerableMessage();
 	}
 
@@ -307,7 +296,7 @@ public class Controller {
 		if (!ReportRegister.getInstance().getReportsClientHello().isEmpty()) {
 			return new ArrayList<>(); //nothing to report
 		}
-
+		
 		ReportMessage rm = new ReportMessage("No SSL/TLS communication was recorded.", ReportMessage.Category.OTHER, new Mode(Mode.Type.MUST_BE), ReportMessage.Type.ERROR);
 		return new ArrayList<>(Arrays.asList(new ReportMessage[]{rm}));
 	}
@@ -320,7 +309,7 @@ public class Controller {
 	 */
 	private List<ReportClientHello> getReportClientHello() {
 		List<ReportClientHello> done = new ArrayList<>();
-
+		
 		for (ReportClientHello report : ReportRegister.getInstance().getReportsClientHello()) {
 			if (!report.getReportMessages().isEmpty()) {
 				done.add(report);
@@ -330,7 +319,7 @@ public class Controller {
 				done.add(safeReport);
 			}
 		}
-
+		
 		return done;
 	}
 
