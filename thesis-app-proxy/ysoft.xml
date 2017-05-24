@@ -3,10 +3,7 @@
 	<directives>
 		<directive name="debug" value="false" />
 		<directive name="localPort" value="2222" />
-		<!--
 		<directive name="remoteHost" value="95.168.222.183" />
-		-->
-		<directive name="remoteHost" value="google.com" />
 		<directive name="remotePort" value="443" />
 	</directives>
 	
@@ -24,7 +21,8 @@
 	</cipherSuites>
 	
 	<certificates>
-		<certificate name="endcert" mode="mustBe" path="end-10.0.13.151.jks" password="changeit" />
+		<certificate name="endcert" mode="mustBe" path="/home/user/QubesIncoming/ysoft/certs/end-10.0.13.151.jks" password="changeit" />
+		<!-- <certificate name="Name #2" mode="mustNotBe" path="/path/to/keystore2.jks" password="password2" /> -->
 	</certificates>
 	
 	<other>

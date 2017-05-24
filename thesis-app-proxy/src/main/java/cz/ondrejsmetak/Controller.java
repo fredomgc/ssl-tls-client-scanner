@@ -94,11 +94,11 @@ public class Controller {
 			}
 
 			//SSL/TLS certificates
-			//for (ClientCertificate certificate : ConfigurationCertificateRegister.getInstance().getConfigurationCertificatesIndexable()) {
-			//	t = new Thread(new TestCertificate(certificate));
-			//	t.start();
-			//	t.join();
-			//}
+			for (ClientCertificate certificate : ConfigurationCertificateRegister.getInstance().getConfigurationCertificatesIndexable()) {
+				t = new Thread(new TestCertificate(certificate));
+				t.start();
+				t.join();
+			}
 
 		} catch (InterruptedException ex) {
 			Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
@@ -269,7 +269,7 @@ public class Controller {
 			if (!run) {
 				Log.infoln("Stopped SSL/TLS Handshake test. Communication occured.");
 			} else {
-				Log.infoln("Stopped SSL/TLS Handshake test. No communication captured.");
+				Log.infoln("Stopped SSL/TLS Handshake test. No communication occured.");
 			}
 		}
 
