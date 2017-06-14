@@ -86,4 +86,6 @@
 	<cipherSuite hexValue="C032" name="TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384" />
 	<cipherSuite hexValue="cca9" name="TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256" />
 	<cipherSuite hexValue="cca8" name="TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256" />
+	<cipherSuite hexValue="0041" name="TLS_RSA_WITH_CAMELLIA_128_CBC_SHA" />
+	
 </cipherSuites>
