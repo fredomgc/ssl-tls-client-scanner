@@ -3,10 +3,8 @@
 	<directives>
 		<directive name="debug" value="false" />
 		<directive name="localPort" value="2222" />
-		<!--
-		<directive name="remoteHost" value="95.168.222.183" />
-		-->
-		<directive name="remoteHost" value="google.com" />
+		
+		<directive name="remoteHost" value="seznam.cz" />
 		<directive name="remotePort" value="443" />
 	</directives>
 	

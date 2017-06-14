@@ -10,6 +10,7 @@ import cz.ondrejsmetak.other.XmlParserException;
 import cz.ondrejsmetak.parser.CipherParser;
 import cz.ondrejsmetak.parser.ConfigurationParser;
 import cz.ondrejsmetak.tool.Log;
+import cz.ondrejsmetak.tool.Pair;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,7 +43,7 @@ public class Controller {
 	 * Timestamp of moment, when proxy server started
 	 */
 	private Date timestampOfStart;
-	
+
 	/**
 	 * Name of configuration file
 	 */
@@ -50,7 +51,8 @@ public class Controller {
 
 	/**
 	 * Creates a new controller, that uses a given configuration file
-	 * @param configurationFileName 
+	 *
+	 * @param configurationFileName
 	 */
 	public Controller(String configurationFileName) {
 		this.configurationFileName = configurationFileName;
@@ -104,7 +106,7 @@ public class Controller {
 			Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
 		}
 	}
-	
+
 	/**
 	 * Runs actions required to transition to listening of SSL/TLS communication
 	 *
@@ -307,7 +309,9 @@ public class Controller {
 			}
 
 			if (!run) {
-				Log.infoln("Stopped protocol test for [%s]. Communication occured, handshake occured: [%s]", protocol, proxy.stopProtocolTest());
+				Pair<Boolean, Boolean> result = proxy.stopProtocolTest();
+				Log.infoln("Stopped protocol test for [%s]. Some communication occured, handshake occured: [%s], communication after handshake occured: [%s]",
+						protocol, result.getLeft(), result.getRight());
 			} else {
 				proxy.stopProtocolTest();
 				Log.infoln("Stopped protocol test for [%s]. No communication occured.", protocol);
@@ -347,7 +351,9 @@ public class Controller {
 			}
 
 			if (!run) {
-				Log.infoln("Stopped certificate test for [%s]. Communication occured, handshake occured: [%s]", certificate.getName(), proxy.stopCertificateTest());
+				Pair<Boolean, Boolean> result = proxy.stopCertificateTest();
+				Log.infoln("Stopped certificate test for [%s]. Some communication occured, handshake occured: [%s], communication after handshake occured: [%s]",
+						certificate.getName(), result.getLeft(), result.getRight());
 			} else {
 				proxy.stopCertificateTest();
 				Log.infoln("Stopped protocol test for [%s]. No communication occured.", certificate.getName());
