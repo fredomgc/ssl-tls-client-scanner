@@ -257,7 +257,8 @@ public class Controller {
 	 */
 	private class TestHandshake implements Runnable, Observer {
 
-		private volatile boolean run = true;
+		private volatile boolean communicationOccured = false;
+		private volatile long timeToLive;
 
 		@Override
 		public void run() {
@@ -265,11 +266,11 @@ public class Controller {
 			proxy.addSingleSubscriber(this);
 
 			long timeToLive = System.nanoTime() + TimeUnit.SECONDS.toNanos(TEST_DELAY_SECONDS);
-			while (run && timeToLive >= System.nanoTime()) {
+			while (timeToLive >= System.nanoTime()) {
 				//we are just waiting for message from proxy server, where we subscribed or for timeout expiration
 			}
 
-			if (!run) {
+			if (communicationOccured) {
 				Log.infoln("Stopped SSL/TLS Handshake test. Communication occured.");
 			} else {
 				Log.infoln("Stopped SSL/TLS Handshake test. No communication occured.");
@@ -278,7 +279,10 @@ public class Controller {
 
 		@Override
 		public void update(Observable o, Object arg) {
-			run = false;
+			if (!communicationOccured) {
+				timeToLive = System.nanoTime() + TimeUnit.SECONDS.toNanos(TEST_DELAY_AFTER_COMMUNICATION_SECONDS);
+			}
+			communicationOccured = true;
 		}
 	}
 
@@ -335,7 +339,7 @@ public class Controller {
 	private class TestCertificate implements Runnable, Observer {
 
 		private volatile boolean communicationOccured = false;
-			private volatile long timeToLive;
+		private volatile long timeToLive;
 		private final ClientCertificate certificate;
 
 		public TestCertificate(ClientCertificate protocol) {

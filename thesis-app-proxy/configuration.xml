@@ -8,7 +8,7 @@
 		https://example.com/
 		-->
 		
-		<directive name="remoteHost" value="seznam.cz" />
+		<directive name="remoteHost" value="google.com" />
 		<directive name="remotePort" value="443" />
 	</directives>
 	
@@ -21,7 +21,7 @@
 	</protocols>
 	
 	<cipherSuites>
-		<cipherSuite name="TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256" mode="mustBe" />
+		<cipherSuite name="TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256" mode="mustNotBe" />
 		<cipherSuite name="TLS_ECDHE_RSA_WITH_RC4_128_SHA" mode="mustBe" />
 	</cipherSuites>
 	
