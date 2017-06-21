@@ -4,6 +4,10 @@
 		<directive name="debug" value="false" />
 		<directive name="localPort" value="2222" />
 		
+		<!--
+		https://example.com/
+		-->
+		
 		<directive name="remoteHost" value="seznam.cz" />
 		<directive name="remotePort" value="443" />
 	</directives>

@@ -99,6 +99,11 @@ public class ProxyServer {
 	private final List<Observer> subscribers = new ArrayList<>();
 
 	/**
+	 * Is server currently reloading itself?
+	 */
+	private volatile boolean isReloading = false;
+
+	/**
 	 * Message sent to the subscribers
 	 */
 	public static final int MESSAGE_COMMUNICATION_OCCURED = 1;
@@ -153,6 +158,8 @@ public class ProxyServer {
 		while (running) {
 			try {
 				try {
+					isReloading = false;
+					//Log.infoln("Now accepting [%s] communication.", clientProtocol);
 					client = serverSocket.accept();
 					succesfullCommunication = true;
 					addHandshakeCompletedListener(client);
@@ -339,8 +346,14 @@ public class ProxyServer {
 		handleClientHello(request, source);
 	}
 
-		public void reload() {
+	public boolean isReloading() {
+		return isReloading;
+	}
+
+	public void reload() {
 		try {
+			isReloading = true;
+
 			if (serverSocket != null) {
 				serverSocket.close();
 			}

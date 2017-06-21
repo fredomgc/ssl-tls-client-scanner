@@ -304,7 +304,7 @@ public class Controller {
 			proxy.reload();
 
 			long timeToLive = System.nanoTime() + TimeUnit.SECONDS.toNanos(TEST_DELAY_SECONDS);
-			while (run && timeToLive >= System.nanoTime()) {
+			while (proxy.isReloading() || (run && timeToLive >= System.nanoTime())) {
 				//we are just waiting for message from proxy server, where we subscribed or for timeout expiration
 			}
 
@@ -346,7 +346,7 @@ public class Controller {
 			proxy.reload();
 
 			long timeToLive = System.nanoTime() + TimeUnit.SECONDS.toNanos(TEST_DELAY_SECONDS);
-			while (run && timeToLive >= System.nanoTime()) {
+			while (proxy.isReloading() || (run && timeToLive >= System.nanoTime())) {
 				//we are just waiting for message from proxy server, where we subscribed or for timeout expiration
 			}
 
