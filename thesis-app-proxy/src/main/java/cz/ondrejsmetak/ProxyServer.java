@@ -246,7 +246,7 @@ public class ProxyServer {
 				BufferedInputStream br = new BufferedInputStream(streamFromServer);
 
 				try {
-					while ((bytesRead = br.read(reply, 0, reply.length)) != -1) {
+					while (!isReloading && (bytesRead = br.read(reply, 0, reply.length)) != -1) {
 						//send everything we have to the client
 						streamToClient.write(reply, 0, bytesRead);
 						streamToClient.flush();
@@ -357,6 +357,7 @@ public class ProxyServer {
 			if (serverSocket != null) {
 				serverSocket.close();
 			}
+
 			serverSocket = createServerSocket();
 		} catch (IOException ex) {
 			//??

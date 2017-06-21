@@ -33,6 +33,7 @@ public class Controller {
 	 * Delay between tests
 	 */
 	private static final int TEST_DELAY_SECONDS = 10;
+	private static final int TEST_DELAY_AFTER_COMMUNICATION_SECONDS = 3;
 
 	/**
 	 * Proxy server
@@ -286,7 +287,8 @@ public class Controller {
 	 */
 	private class TestProtocol implements Runnable, Observer {
 
-		private volatile boolean run = true;
+		private volatile boolean communicationOccured = false;
+		private volatile long timeToLive;
 		private final Protocol protocol;
 
 		public TestProtocol(Protocol protocol) {
@@ -303,12 +305,12 @@ public class Controller {
 			proxy.startProtocolTest();
 			proxy.reload();
 
-			long timeToLive = System.nanoTime() + TimeUnit.SECONDS.toNanos(TEST_DELAY_SECONDS);
-			while (proxy.isReloading() || (run && timeToLive >= System.nanoTime())) {
+			timeToLive = System.nanoTime() + TimeUnit.SECONDS.toNanos(TEST_DELAY_SECONDS);
+			while (proxy.isReloading() || (timeToLive >= System.nanoTime())) {
 				//we are just waiting for message from proxy server, where we subscribed or for timeout expiration
 			}
 
-			if (!run) {
+			if (communicationOccured) {
 				Pair<Boolean, Boolean> result = proxy.stopProtocolTest();
 				Log.infoln("Stopped protocol test for [%s]. Some communication occured, handshake occured: [%s], communication after handshake occured: [%s]",
 						protocol, result.getLeft(), result.getRight());
@@ -320,7 +322,10 @@ public class Controller {
 
 		@Override
 		public void update(Observable o, Object arg) {
-			run = false;
+			if (!communicationOccured) {
+				timeToLive = System.nanoTime() + TimeUnit.SECONDS.toNanos(TEST_DELAY_AFTER_COMMUNICATION_SECONDS);
+			}
+			communicationOccured = true;
 		}
 	}
 
@@ -329,7 +334,8 @@ public class Controller {
 	 */
 	private class TestCertificate implements Runnable, Observer {
 
-		private volatile boolean run = true;
+		private volatile boolean communicationOccured = false;
+			private volatile long timeToLive;
 		private final ClientCertificate certificate;
 
 		public TestCertificate(ClientCertificate protocol) {
@@ -345,12 +351,12 @@ public class Controller {
 			proxy.startCertificateTest();
 			proxy.reload();
 
-			long timeToLive = System.nanoTime() + TimeUnit.SECONDS.toNanos(TEST_DELAY_SECONDS);
-			while (proxy.isReloading() || (run && timeToLive >= System.nanoTime())) {
+			timeToLive = System.nanoTime() + TimeUnit.SECONDS.toNanos(TEST_DELAY_SECONDS);
+			while (proxy.isReloading() || (timeToLive >= System.nanoTime())) {
 				//we are just waiting for message from proxy server, where we subscribed or for timeout expiration
 			}
 
-			if (!run) {
+			if (communicationOccured) {
 				Pair<Boolean, Boolean> result = proxy.stopCertificateTest();
 				Log.infoln("Stopped certificate test for [%s]. Some communication occured, handshake occured: [%s], communication after handshake occured: [%s]",
 						certificate.getName(), result.getLeft(), result.getRight());
@@ -362,7 +368,10 @@ public class Controller {
 
 		@Override
 		public void update(Observable o, Object arg) {
-			run = false;
+			if (!communicationOccured) {
+				timeToLive = System.nanoTime() + TimeUnit.SECONDS.toNanos(TEST_DELAY_AFTER_COMMUNICATION_SECONDS);
+			}
+			communicationOccured = true;
 		}
 	}
 }
