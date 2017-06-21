@@ -205,7 +205,7 @@ public class Controller {
 			if (!report.getReportMessages().isEmpty()) {
 				done.add(report);
 			} else {
-				ReportMessage safeMessage = new ReportMessage("All tests performed with the given configuration over captured Client Hello passed successfully.", ReportMessage.Category.OTHER, null, ReportMessage.Type.SUCCESS);
+				ReportMessage safeMessage = new ReportMessage("All tests performed with the given configuration passed successfully.", ReportMessage.Category.OTHER, null, ReportMessage.Type.SUCCESS);
 				ReportClientHello safeReport = new ReportClientHello(report.getClientHelloId(), new ArrayList<>(Arrays.asList(new ReportMessage[]{safeMessage})));
 				done.add(safeReport);
 			}

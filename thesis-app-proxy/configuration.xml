@@ -16,13 +16,15 @@
 		<protocol name="SSLv2" mode="canBe" />
 		<protocol name="SSLv3" mode="canBe" />
 		<protocol name="TLS 1.0" mode="canBe" />
-		<protocol name="TLS 1.1" mode="mustNotBe" />
+		<protocol name="TLS 1.1" mode="mustBe" />
 		<protocol name="TLS 1.2" mode="mustBe" />
 	</protocols>
 	
 	<cipherSuites>
+		<!--
 		<cipherSuite name="TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256" mode="mustNotBe" />
 		<cipherSuite name="TLS_ECDHE_RSA_WITH_RC4_128_SHA" mode="mustBe" />
+		-->
 	</cipherSuites>
 	
 	<certificates>
