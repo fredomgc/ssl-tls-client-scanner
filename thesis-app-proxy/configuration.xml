@@ -29,6 +29,7 @@
 	
 	<certificates>
 		<certificate name="endcert" mode="mustBe" path="end-10.0.13.151.jks" password="changeit" />
+
 	</certificates>
 	
 	<other>
