@@ -301,7 +301,7 @@ public class ConfigurationParser extends BaseParser {
 		ClientCertificate certificate = new ClientCertificate(name, mode, path, password);
 
 		if (ConfigurationCertificateRegister.getInstance().containsConfigurationCertificate(certificate)) {
-			throw new XmlParserException(String.format("Certificate with name [%s] already exists.", path));
+			throw new XmlParserException(String.format("Certificate with name [%s] already exists.", name));
 		}
 
 		ConfigurationCertificateRegister.getInstance().addConfigurationCertificate(certificate);
