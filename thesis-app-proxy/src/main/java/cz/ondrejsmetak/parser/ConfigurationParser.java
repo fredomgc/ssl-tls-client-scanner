@@ -42,19 +42,22 @@ public class ConfigurationParser extends BaseParser {
 	private static final String TAG_DIRECTIVE = "directive";
 	private static final String TAG_PROTOCOLS = "protocols";
 	private static final String TAG_PROTOCOL = "protocol";
-	private static final String TAG_OTHER = "other";
-	private static final String TAG_TLS_FALLBACK_SCSV = "tlsFallbackScsv";
 	private static final String TAG_CIPHER_SUITES = "cipherSuites";
 	private static final String TAG_CIPHER_SUITE = "cipherSuite";
 	private static final String TAG_CERTIFICATES = "certificates";
 	private static final String TAG_CERTIFICATE = "certificate";
-
+	private static final String TAG_OTHER = "other";
+	private static final String TAG_TLS_FALLBACK_SCSV = "tlsFallbackScsv";
+	
 	private static final String ATTRIBUTE_NAME = "name";
 	private static final String ATTRIBUTE_VALUE = "value";
 	private static final String ATTRIBUTE_MODE = "mode";
 	private static final String ATTRIBUTE_PATH = "path";
 	private static final String ATTRIBUTE_PASSWORD = "password";
 
+	
+	
+	
 	/**
 	 * Creates a new ConfigurationParser for the given configuration file
 	 *
@@ -101,8 +104,10 @@ public class ConfigurationParser extends BaseParser {
 			TAG_CIPHER_SUITE,
 			TAG_CERTIFICATES,
 			TAG_CERTIFICATE,
-			TAG_OTHER,
-			TAG_TLS_FALLBACK_SCSV}));
+			//currently disabled
+			//see 
+			/*TAG_OTHER,
+			TAG_TLS_FALLBACK_SCSV*/}));
 
 		if (!supportedTags.contains(node.getNodeName())) {
 			throw new XmlParserException("Unknown tag [%s]. You must use only supported tags!", node.getNodeName());
@@ -202,12 +207,14 @@ public class ConfigurationParser extends BaseParser {
 			/**
 			 * TLS_FALLBACK_SCSV
 			 */
+			//currenlty disabled. See ClientHelloScanner, method "doScanTlsFallbackScsv" for more info
+			/*
 			Mode tlsFallbackScsv = parseTlsFallbackScsv(getElementByTagName(configuration, TAG_TLS_FALLBACK_SCSV));
 			if (tlsFallbackScsv != null) {
 				ConfigurationRegister.getInstance().setTlsFallbackScsv(tlsFallbackScsv);
 				CipherSuite cs = new CipherSuite(CipherSuiteRegister.TLS_FALLBACK_SCSV_HEX, CipherSuiteRegister.TLS_FALLBACK_SCSV_NAME, tlsFallbackScsv);
 				CipherSuiteRegister.getInstance().addCipherSuite(cs);
-			}
+			}*/
 		} catch (ParserConfigurationException | SAXException | IllegalArgumentException | IOException ex) {
 			throw new XmlParserException(ex);
 		}

@@ -505,7 +505,8 @@ public class ProxyServer {
 	/**
 	 * Stops protocol test and saves current result
 	 *
-	 * @return true, if handshake occured during testing, false otherwise
+	 * @return pair of booleans indicating, if handshake and general
+	 * communication occured during testing
 	 */
 	public Pair<Boolean, Boolean> stopProtocolTest() {
 		//not even communication

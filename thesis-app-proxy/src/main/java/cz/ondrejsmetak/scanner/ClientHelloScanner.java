@@ -50,8 +50,7 @@ public class ClientHelloScanner extends BaseScanner {
 	 * Scan content of Client Hello
 	 */
 	private void doScan() {
-		doScanProtocols();
-		doScanTlsFallbackScsv();
+		//currenlty disabled. See ClientHelloScanner, method "doScanTlsFallbackScsv" for more info
 		doScanCipherSuites();
 	}
 
@@ -83,6 +82,14 @@ public class ClientHelloScanner extends BaseScanner {
 
 	/**
 	 * Scan offered cipher suites for support of TLS_FALLBACK_SCSV
+	 *
+	 * @deprecated currently disabled REASON:
+	 *
+	 * "domluvili jsme se na tom, že TLS_FALLBACK_SCSV má nevýhodný poměr z
+	 * hlediska pracnosti a přínosu, takže to můžete brát jako něco, co má malou
+	 * prioritu. Kdyby na to náhodou zbyl čas, bylo by to fajn, ale není to
+	 * nutné. Akorát dokud to nebude funkční, nemělo by se to tvářit, že to
+	 * TLS_FALLBACK_SCSV testuje."
 	 */
 	private void doScanTlsFallbackScsv() {
 		Mode mode = ConfigurationRegister.getInstance().getTlsFallbackScsv();
@@ -100,45 +107,6 @@ public class ClientHelloScanner extends BaseScanner {
 			ReportMessage rp = new ReportMessage(message, ReportMessage.Category.CIPHER, mode, ReportMessage.Type.ERROR);
 			reportMessages.add(rp);
 		}
-	}
-
-	/**
-	 * Scan protocols offered in Client Hello
-	 */
-	private void doScanProtocols() {
-//		Protocol highestSupportedProtocol = ConfigurationRegister.getInstance().getHighestSupportedProtocol();
-//		String message = null;
-//
-//		if (highestSupportedProtocol.getMode().isCanBe()) {
-//			//in this case, we don't care
-//		} else if (highestSupportedProtocol.getMode().isMustBe()) {
-//			List<Protocol> missing = new ArrayList<>(ConfigurationRegister.getInstance().getSupportedProtocols());
-//			missing.removeAll(clientHello.getSupportedProtocolsDuringHandshake());
-//
-//			List<Protocol> indwelling = new ArrayList<>(clientHello.getSupportedProtocolsDuringHandshake());
-//			indwelling.removeAll(ConfigurationRegister.getInstance().getSupportedProtocols());
-//
-//			if (!missing.isEmpty()) {
-//				message = String.format("Highest supported protocol MUST BE [%s], but following protocol(s) is/are NOT supported: %s!",
-//						highestSupportedProtocol.toString(), missing);
-//			}
-//
-//			if (!indwelling.isEmpty()) {
-//				message = String.format("Highest supported protocol MUST BE [%s], but following protocol(s) is/are ALSO supported: %s!",
-//						highestSupportedProtocol.toString(), indwelling);
-//			}
-//		} else if (highestSupportedProtocol.getMode().isMustNotBe()) {
-//
-//			if (clientHello.getSupportedProtocolsDuringHandshake().contains(highestSupportedProtocol)) {
-//				message = String.format("Highest supported protocol MUST NOT BE [%s], but this protocol IS supported!",
-//						highestSupportedProtocol);
-//			}
-//		}
-//
-//		if (message != null) {
-//			ReportMessage rp = new ReportMessage(message, ReportMessage.Category.PROTOCOL, highestSupportedProtocol.getMode(), ReportMessage.Type.ERROR);
-//			reportMessages.add(rp);
-//		}
 	}
 
 }

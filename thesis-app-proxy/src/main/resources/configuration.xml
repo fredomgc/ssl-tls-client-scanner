@@ -23,8 +23,4 @@
 		<certificate name="Name #1" mode="mustBe" path="/path/to/keystore1.jks" password="password1" />
 		<certificate name="Name #2" mode="mustNotBe" path="/path/to/keystore2.jks" password="password2" />
 	</certificates>
-	
-	<other>
-		<tlsFallbackScsv mode="canBe" />
-	</other>
 </configuration>
