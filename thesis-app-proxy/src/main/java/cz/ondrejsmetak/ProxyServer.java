@@ -164,7 +164,6 @@ public class ProxyServer {
 					succesfullCommunication = true;
 					addHandshakeCompletedListener(client);
 					notifySubscribers(MESSAGE_COMMUNICATION_OCCURED);
-
 				} catch (Exception e) {
 
 				}

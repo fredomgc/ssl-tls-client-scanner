@@ -9,6 +9,7 @@ import cz.ondrejsmetak.export.HtmlExport;
 import cz.ondrejsmetak.other.XmlParserException;
 import cz.ondrejsmetak.parser.CipherParser;
 import cz.ondrejsmetak.parser.ConfigurationParser;
+import cz.ondrejsmetak.tool.Helper;
 import cz.ondrejsmetak.tool.Log;
 import cz.ondrejsmetak.tool.Pair;
 import java.io.IOException;
@@ -33,7 +34,7 @@ public class Controller {
 	 * Delay between tests
 	 */
 	private static final int TEST_DELAY_SECONDS = 10;
-	private static final int TEST_DELAY_AFTER_COMMUNICATION_SECONDS = 3;
+	private static final int TEST_DELAY_AFTER_UPDATE = 2;
 
 	/**
 	 * Proxy server
@@ -102,7 +103,6 @@ public class Controller {
 				t.start();
 				t.join();
 			}
-
 		} catch (InterruptedException ex) {
 			Logger.getLogger(Controller.class.getName()).log(Level.SEVERE, null, ex);
 		}
@@ -258,16 +258,18 @@ public class Controller {
 	private class TestHandshake implements Runnable, Observer {
 
 		private volatile boolean communicationOccured = false;
-		private volatile long timeToLive;
+		private volatile Thread myThread;
 
 		@Override
 		public void run() {
 			Log.infoln("Starting SSL/TLS Handshake test");
 			proxy.addSingleSubscriber(this);
+			myThread = Thread.currentThread();
 
-			long timeToLive = System.nanoTime() + TimeUnit.SECONDS.toNanos(TEST_DELAY_SECONDS);
-			while (timeToLive >= System.nanoTime()) {
-				//we are just waiting for message from proxy server, where we subscribed or for timeout expiration
+			try {
+				Thread.sleep(TimeUnit.SECONDS.toMillis(TEST_DELAY_SECONDS));
+			} catch (InterruptedException ex) {
+				//intentionally interruped
 			}
 
 			if (communicationOccured) {
@@ -280,7 +282,9 @@ public class Controller {
 		@Override
 		public void update(Observable o, Object arg) {
 			if (!communicationOccured) {
-				timeToLive = System.nanoTime() + TimeUnit.SECONDS.toNanos(TEST_DELAY_AFTER_COMMUNICATION_SECONDS);
+				Helper.waitAndCall(TEST_DELAY_AFTER_UPDATE, () -> {
+					myThread.interrupt();
+				});
 			}
 			communicationOccured = true;
 		}
@@ -292,8 +296,8 @@ public class Controller {
 	private class TestProtocol implements Runnable, Observer {
 
 		private volatile boolean communicationOccured = false;
-		private volatile long timeToLive;
 		private final Protocol protocol;
+		private volatile Thread myThread;
 
 		public TestProtocol(Protocol protocol) {
 			this.protocol = protocol;
@@ -308,10 +312,15 @@ public class Controller {
 			proxy.setClientProtocol(protocol);
 			proxy.startProtocolTest();
 			proxy.reload();
+			myThread = Thread.currentThread();
 
-			timeToLive = System.nanoTime() + TimeUnit.SECONDS.toNanos(TEST_DELAY_SECONDS);
-			while (proxy.isReloading() || (timeToLive >= System.nanoTime())) {
-				//we are just waiting for message from proxy server, where we subscribed or for timeout expiration
+			while (proxy.isReloading()) {
+			}
+
+			try {
+				Thread.sleep(TimeUnit.SECONDS.toMillis(TEST_DELAY_SECONDS));
+			} catch (InterruptedException ex) {
+				//intentionally interruped
 			}
 
 			if (communicationOccured) {
@@ -327,7 +336,9 @@ public class Controller {
 		@Override
 		public void update(Observable o, Object arg) {
 			if (!communicationOccured) {
-				timeToLive = System.nanoTime() + TimeUnit.SECONDS.toNanos(TEST_DELAY_AFTER_COMMUNICATION_SECONDS);
+				Helper.waitAndCall(TEST_DELAY_AFTER_UPDATE, () -> {
+					myThread.interrupt();
+				});
 			}
 			communicationOccured = true;
 		}
@@ -339,8 +350,8 @@ public class Controller {
 	private class TestCertificate implements Runnable, Observer {
 
 		private volatile boolean communicationOccured = false;
-		private volatile long timeToLive;
 		private final ClientCertificate certificate;
+		private volatile Thread myThread;
 
 		public TestCertificate(ClientCertificate protocol) {
 			this.certificate = protocol;
@@ -354,10 +365,15 @@ public class Controller {
 			proxy.setConfigurationCertificate(certificate);
 			proxy.startCertificateTest();
 			proxy.reload();
+			myThread = Thread.currentThread();
 
-			timeToLive = System.nanoTime() + TimeUnit.SECONDS.toNanos(TEST_DELAY_SECONDS);
-			while (proxy.isReloading() || (timeToLive >= System.nanoTime())) {
-				//we are just waiting for message from proxy server, where we subscribed or for timeout expiration
+			while (proxy.isReloading()) {
+			}
+
+			try {
+				Thread.sleep(TimeUnit.SECONDS.toMillis(TEST_DELAY_SECONDS));
+			} catch (InterruptedException ex) {
+				//intentionally interruped
 			}
 
 			if (communicationOccured) {
@@ -373,7 +389,9 @@ public class Controller {
 		@Override
 		public void update(Observable o, Object arg) {
 			if (!communicationOccured) {
-				timeToLive = System.nanoTime() + TimeUnit.SECONDS.toNanos(TEST_DELAY_AFTER_COMMUNICATION_SECONDS);
+				Helper.waitAndCall(TEST_DELAY_AFTER_UPDATE, () -> {
+					myThread.interrupt();
+				});
 			}
 			communicationOccured = true;
 		}

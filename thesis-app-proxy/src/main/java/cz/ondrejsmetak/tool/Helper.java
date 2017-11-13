@@ -331,4 +331,13 @@ public class Helper {
 		return new File(path).exists();
 	}
 
+	public static void waitAndCall(int seconds, Runnable r) {
+		new java.util.Timer().schedule(new java.util.TimerTask() {
+			@Override
+			public void run() {
+				r.run();
+			}
+		}, seconds * 1000);
+	}
+
 }
