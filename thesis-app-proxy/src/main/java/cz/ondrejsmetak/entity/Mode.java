@@ -62,7 +62,19 @@ public class Mode {
 
 	@Override
 	public String toString() {
-		return type.toString();
+		if(type.equals(Type.MUST_BE)){
+			return "MUST BE";
+		}
+		
+		if(type.equals(Type.MUST_NOT_BE)){
+			return "MUST NOT BE";
+		}
+		
+		if(type.equals(Type.CAN_BE)){
+			return "CAN BE";
+		}
+		
+		return "UNKNOWN";
 	}
 
 	public Mode.Type getType() {
