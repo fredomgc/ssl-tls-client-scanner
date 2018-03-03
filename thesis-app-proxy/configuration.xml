@@ -13,7 +13,7 @@
 	</directives>
 	
 	<protocols>
-		<protocol name="SSLv2" mode="canBe" />
+		<protocol name="SSLv2" mode="mustNotBe" />
 		<protocol name="SSLv3" mode="canBe" />
 		<protocol name="TLS 1.0" mode="canBe" />
 		<protocol name="TLS 1.1" mode="mustBe" />

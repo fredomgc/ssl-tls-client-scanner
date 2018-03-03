@@ -512,7 +512,7 @@ public class ProxyServer {
 		if (!succesfullCommunication && clientProtocol.getMode().isMustBeOrMustNotBe()) {
 			String message = String.format("Protocol [%s] %s supported, but there wasn't captured any communication to determine!", clientProtocol.getType(), clientProtocol.getMode());
 			ReportMessage rp = new ReportMessage(message, ReportMessage.Category.PROTOCOL, clientProtocol.getMode(), ReportMessage.Type.ERROR);
-			ReportRegister.getInstance().addReportCertificate(rp);
+			ReportRegister.getInstance().addReportProtocol(rp);
 			return new Pair<>(false, false);
 		}
 
